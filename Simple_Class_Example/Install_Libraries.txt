@@ -1,0 +1,1 @@
+Install libraries (.h/.cpp files) by coping the files into the ...\Arduino\libraries\"Library"\ folder.
