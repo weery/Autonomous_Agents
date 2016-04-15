@@ -76,10 +76,21 @@ void Brain::Run()
     switch(_current_state)
     {
         case STATE_SEARCH:
-            if (ir_left > 0){
+            if (ir_left > 0 && ir_right>0){
                 _current_movement = STATE_BACKWARD;
-                _acceleration = RETARDATION;
+                _acceleration= RETARDATION;
+            } else if (ir_right >0)
+            {
+                _current_movement = STATE_ROTATE_LEFT;
+                _acceleration= RETARDATION;
             }
+            else if (ir_left > 0){
+                _current_movement = STATE_ROTATE_RIGHT;
+                _acceleration= RETARDATION;
+            }
+            else {
+                _current_movement = STATE_FORWARD;
+            _acceleration= ACCELERATION;}
 
             break;
         case STATE_LOCALIZE:
@@ -91,23 +102,31 @@ void Brain::Run()
     switch(_current_movement)
     {
         case STATE_ROTATE_LEFT:
-            _servo_signal_wanted_left = 1400;
-            _servo_signal_wanted_right = 1400;
+            _servo_signal_left = 1450;
+            _servo_signal_right = 1450;
+            _servo_signal_wanted_left = 1450;
+            _servo_signal_wanted_right = 1450;
             break;
         case STATE_ROTATE_RIGHT:
-            _servo_signal_wanted_left = 1600;
-            _servo_signal_wanted_right = 1600;
+            _servo_signal_left = 1550;
+            _servo_signal_right = 1550;
+            _servo_signal_wanted_left = 1550;
+            _servo_signal_wanted_right = 1550;
             break;
         case STATE_FORWARD:
-            _servo_signal_wanted_left = 1600;
-            _servo_signal_wanted_right = 1400;
+            _servo_signal_left = 1550;
+            _servo_signal_right = 1450;
+            _servo_signal_wanted_left = 1550;
+            _servo_signal_wanted_right = 1450;
             break;
         case STATE_BACKWARD:
-            _servo_signal_wanted_left = 1400;
-            _servo_signal_wanted_right = 1600;
+            _servo_signal_left = 1450;
+            _servo_signal_right = 1550;
+            _servo_signal_wanted_left = 1450;
+            _servo_signal_wanted_right = 1550;
             break;
     }
-    ChangeServoSignal();
+    //ChangeServoSignal();
     _servo_left.writeMicroseconds(_servo_signal_left);
     _servo_right.writeMicroseconds(_servo_signal_right);
 
