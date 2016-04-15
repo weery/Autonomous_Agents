@@ -38,6 +38,8 @@ void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right,
     _servo_signal_left = 1500;
     _servo_signal_right = 1500;
 
+    _acceleration = ACCELERATION;
+
     pinMode(_pin_ir_reciever_left,INPUT);
     pinMode(_pin_ir_reciever_right,INPUT);
 
@@ -74,8 +76,9 @@ void Brain::Run()
     switch(_current_state)
     {
         case STATE_SEARCH:
-            if (!whisker_left){
+            if (ir_left > 0){
                 _current_movement = STATE_BACKWARD;
+                _acceleration = RETARDATION;
             }
 
             break;
@@ -134,16 +137,16 @@ void Brain::LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_dis
 void Brain::ChangeServoSignal()
 {
     if(_servo_signal_left < _servo_signal_wanted_left){
-        _servo_signal_left += ACCELERATION;
+        _servo_signal_left += _acceleration;
     }
     if(_servo_signal_left > _servo_signal_wanted_left){
-        _servo_signal_left -= ACCELERATION;
+        _servo_signal_left -= _acceleration;
     }
     if(_servo_signal_right < _servo_signal_wanted_right){
-        _servo_signal_right += ACCELERATION;
+        _servo_signal_right += _acceleration;
     }
     if(_servo_signal_right > _servo_signal_wanted_right){
-        _servo_signal_right -= ACCELERATION;
+        _servo_signal_right -= _acceleration;
     }
 
     if(_servo_signal_left > UPPER_LIMIT){

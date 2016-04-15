@@ -60,7 +60,9 @@ class Brain
         const char MAX_SPEED = 125;
         const char MIN_SPEED = -125;
 
+        byte _acceleration;
         const byte ACCELERATION = 10;
+        const byte RETARDATION = 200;
 
         const short UPPER_LIMIT = 1650;
         const short LOWER_LIMIT = 1350;
@@ -74,6 +76,9 @@ class Brain
         bool irDetect(byte irLedPin, byte irReceiverPin, unsigned short frequency);
 
         void ChangeServoSignal();
+
+        void LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_distance,
+        byte ir_left, byte ir_right);
 };
 
 
