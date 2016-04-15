@@ -1,6 +1,10 @@
 #include "Brain.h"
 
-void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right, byte pin_servo_left, byte pin_servo_right, byte pin_ir_reciever_left, byte pin_ir_reciever_right, byte pin_ir_transmitter_left,byte pin_ir_transmitter_right, byte pin_ultrasonic_trig, byte pin_ultrasonic_echo, byte pin_speaker)
+void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right,
+        byte pin_servo_left, byte pin_servo_right, byte pin_ir_reciever_left,
+        byte pin_ir_reciever_right, byte pin_ir_transmitter_left,
+        byte pin_ir_transmitter_right, byte pin_ultrasonic_trig,
+        byte pin_ultrasonic_echo, byte pin_speaker)
 {
     _pin_whiskers_left = pin_whiskers_left;
     _pin_whiskers_right = pin_whiskers_right;
@@ -61,22 +65,9 @@ void Brain::Run()
 
     byte ir_left = Brain::ReadIR(_pin_ir_reciever_left,_pin_ir_transmitter_left);
     byte ir_right = Brain::ReadIR(_pin_ir_reciever_right,_pin_ir_transmitter_right);
-    /*
-    Serial.print("Whisker Left: ");
-    Serial.println(whisker_left);
 
-    Serial.print(" Whisker Right: ");
-    Serial.println(whisker_right);
+    Brain::LogSensors(whisker_left, whisker_right, ultrasonic_distance, ir_left, ir_right);
 
-    Serial.print(" Ultrasonic: ");
-    Serial.println(ultrasonic_distance);
-
-    Serial.print(" IR Left: ");
-    Serial.println(ir_left);
-
-    Serial.print(" IR Right: ");
-    Serial.println(ir_right);
-*/
     switch(_current_state)
     {
         case STATE_SEARCH:
@@ -113,7 +104,27 @@ void Brain::Run()
     ChangeServoSignal();
     _servo_left.writeMicroseconds(_servo_signal_left);
     _servo_right.writeMicroseconds(_servo_signal_right);
+
     delay(20);
+}
+
+void Brain::LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_distance,
+        byte ir_left, byte ir_right)
+{
+    Serial.print("Whisker Left: ");
+    Serial.println(whisker_left);
+
+    Serial.print(" Whisker Right: ");
+    Serial.println(whisker_right);
+
+    Serial.print(" Ultrasonic: ");
+    Serial.println(ultrasonic_distance);
+
+    Serial.print(" IR Left: ");
+    Serial.println(ir_left);
+
+    Serial.print(" IR Right: ");
+    Serial.println(ir_right);
 }
 
 // change signal based on what is wanted
