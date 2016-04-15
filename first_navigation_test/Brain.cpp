@@ -35,6 +35,9 @@ void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right,
     _servo_left.writeMicroseconds(1500);
     _servo_right.writeMicroseconds(1500);
 
+    _servo_signal_left = 1500;
+    _servo_signal_right = 1500;
+
     pinMode(_pin_ir_reciever_left,INPUT);
     pinMode(_pin_ir_reciever_right,INPUT);
 
@@ -130,8 +133,19 @@ void Brain::LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_dis
 // change signal based on what is wanted
 void Brain::ChangeServoSignal()
 {
-    _servo_signal_left += copysign(1,_servo_signal_wanted_left - _servo_signal_left)*ACCELERATION;
-    _servo_signal_right += copysign(1,_servo_signal_wanted_right - _servo_signal_right)*ACCELERATION;
+    if(_servo_signal_left < _servo_signal_wanted_left){
+        _servo_signal_left += ACCELERATION;
+    }
+    if(_servo_signal_left > _servo_signal_wanted_left){
+        _servo_signal_left -= ACCELERATION;
+    }
+    if(_servo_signal_right < _servo_signal_wanted_right){
+        _servo_signal_right += ACCELERATION;
+    }
+    if(_servo_signal_right > _servo_signal_wanted_right){
+        _servo_signal_right -= ACCELERATION;
+    }
+
     if(_servo_signal_left > UPPER_LIMIT){
         _servo_signal_left = UPPER_LIMIT;
     }
