@@ -2,12 +2,12 @@
 
 void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right, byte pin_servo_left, byte pin_servo_right, byte pin_ir_reciever_left, byte pin_ir_reciever_right, byte pin_ir_transmitter_left,byte pin_ir_transmitter_right, byte pin_ultrasonic_trig, byte pin_ultrasonic_echo, byte pin_speaker)
 {
-    /*
     _pin_whiskers_left = pin_whiskers_left;
     _pin_whiskers_right = pin_whiskers_right;
     
+    
     _pin_servo_left = pin_servo_left;
-    _pin_servo_right = pin_servo_right;*/
+    _pin_servo_right = pin_servo_right;
     
     _pin_ir_reciever_left = pin_ir_reciever_left;
     _pin_ir_reciever_right = pin_ir_reciever_right;
@@ -15,17 +15,18 @@ void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right, byte
     _pin_ir_transmitter_left = pin_ir_transmitter_left;
     _pin_ir_transmitter_right = pin_ir_transmitter_right;
     
-    /*
+    
     _pin_ultrasonic_trig = pin_ultrasonic_trig;
-    _pin_ultrasonic_echo = pin_ultrasonic_echo;*/
+    _pin_ultrasonic_echo = pin_ultrasonic_echo;
     
     _pin_speaker = pin_speaker;
-    /*
+    
     pinMode(_pin_whiskers_left,INPUT);
     pinMode(_pin_whiskers_right,INPUT);
     
+    
     _servo_left.attach(_pin_servo_left);
-    _servo_right.attach(_pin_servo_right);*/
+    _servo_right.attach(_pin_servo_right);
     
     pinMode(_pin_ir_reciever_left,INPUT);
     pinMode(_pin_ir_reciever_right,INPUT);
@@ -33,9 +34,9 @@ void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right, byte
     pinMode(_pin_ir_transmitter_left,OUTPUT);
     pinMode(_pin_ir_transmitter_right,OUTPUT);
     
-    /*
+    
     pinMode(_pin_ultrasonic_trig,OUTPUT);
-    pinMode(_pin_ultrasonic_echo,OUTPUT);*/
+    pinMode(_pin_ultrasonic_echo,INPUT);
     
     _current_state = STATE_SEARCH;
     
@@ -50,29 +51,28 @@ void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right, byte
 
 void Brain::Run()
 {
-    //bool whisker_left =  Brain::ReadWhiskers(_pin_whiskers_left);
-    //bool whisker_right = Brain::ReadWhiskers(_pin_whiskers_right);
+    bool whisker_left =  Brain::ReadWhiskers(_pin_whiskers_left);
+    bool whisker_right = Brain::ReadWhiskers(_pin_whiskers_right);
     
-    //int ultrasonic_distance = Brain::ReadUltrasonic();
+    int ultrasonic_distance = Brain::ReadUltrasonic();
     
     byte ir_left = Brain::ReadIR(_pin_ir_reciever_left,_pin_ir_transmitter_left);
     byte ir_right = Brain::ReadIR(_pin_ir_reciever_right,_pin_ir_transmitter_right);
     
-    /*
     Serial.print("Whisker Left: ");
-    Serial.print(whisker_left);
+    Serial.println(whisker_left);
     
     Serial.print(" Whisker Right: ");
-    Serial.print(whisker_right);
+    Serial.println(whisker_right);
     
     Serial.print(" Ultrasonic: ");
-    Serial.print(ultrasonic_distance);
+    Serial.println(ultrasonic_distance);
     
     Serial.print(" IR Left: ");
-    Serial.print(ir_left);
+    Serial.println(ir_left);
     
     Serial.print(" IR Right: ");
-    Serial.println(ir_right);*/
+    Serial.println(ir_right);
     
     switch(_current_state)
     {
@@ -96,15 +96,17 @@ void Brain::Run()
             break;
     }
     
-    delay(100);
+    delay(20);
 }
 
+// change signal based on what is wanted
 void Brain::ChangeServoSignal()
 {
     _servo_signal_left += copysign(1,_servo_signal_wanted_left-_servo_signal_left)*50;
-    _servo_signal_Right += copysign(1,_servo_signal_wanted_right-_servo_signal_Right)*50;
+    _servo_signal_right += copysign(1,_servo_signal_wanted_right-_servo_signal_right)*50;
 }
 
+// -1 no read, else give distance to object
 int Brain::ReadUltrasonic()
 {
     short maximumRange = 400;
@@ -117,26 +119,25 @@ int Brain::ReadUltrasonic()
      delayMicroseconds(10); 
      
      digitalWrite(_pin_ultrasonic_trig, LOW);
-     short duration = pulseIn(_pin_ultrasonic_echo, HIGH);
-     
-     short distance = duration/58.2;
-     
+     float duration = pulseIn(_pin_ultrasonic_echo, HIGH);
+     float distance = duration/58.2;
      if (distance >= maximumRange || distance <= minimumRange){
         distance = -1;
      }
      
      delay(50);
      
-     return distance;
+     return floor(distance);
 }
 
+// 1 No touch, 0 touch
 bool Brain::ReadWhiskers(byte pin_nr)
 {
     bool whiskers_state = digitalRead(pin_nr);
     return whiskers_state;
 }
 
-
+// 0 no read, 20-40 read based on distance 
 byte Brain::ReadIR(byte pin_reciever, byte pin_transmitter)
 {
     delay(100);
@@ -154,6 +155,7 @@ byte Brain::ReadIR(byte pin_reciever, byte pin_transmitter)
     return distance;
 }
 
+// 0 if detect based on frequency
 bool Brain::irDetect(byte irLedPin, byte irReceiverPin, unsigned short frequency)
 {
   tone(irLedPin, frequency, 8);              

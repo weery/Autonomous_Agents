@@ -57,7 +57,8 @@ class Brain
         MovementStates _current_movement;
         
         byte _speed;
-        const unsigned char MAX_SPEED = 255;
+        const char MAX_SPEED = 125;
+        const char MIN_SPEED = -125;
         
         const short UPPER_LIMIT = 1700;
         const short LOWER_LIMIT = 1300;
@@ -69,6 +70,8 @@ class Brain
         byte ReadIR(byte pin_reciever, byte pin_transmitter);
         
         bool irDetect(byte irLedPin, byte irReceiverPin, unsigned short frequency);
+        
+        void ChangeServoSignal();
 };
 
 

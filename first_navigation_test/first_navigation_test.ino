@@ -5,18 +5,18 @@ Brain brain;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  brain.InitializePins(0,0,0,0,3,9,2,8,0,0,4);
-  // Whisker Left =
-  // Whisker Right =
-  // Servo Left =
-  // Servo Right =
-  // IR Reciever Left = 3
-  // IR Reciever Right = 2
-  // IR Transmitter Left = 9 
-  // IR Transmitter Right = 8
-  // Ultrasonic Trig = 
-  // Ultrasonic Echo = 
-  // Speaker = 4
+  brain.InitializePins(4,6,13,12,9,3,8,2,11,10,5);
+  // Whisker Left = 4
+  // Whisker Right = 6
+  // Servo Left = 13
+  // Servo Right = 12
+  // IR Reciever Left = 9
+  // IR Reciever Right = 3
+  // IR Transmitter Left = 8 
+  // IR Transmitter Right = 2
+  // Ultrasonic Trig = 11
+  // Ultrasonic Echo = 10
+  // Speaker = 5
 }
 
 void loop() {
