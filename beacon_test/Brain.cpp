@@ -55,6 +55,12 @@ void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right,
     _current_movement = STATE_FORWARD;
 
     _speed = MAX_SPEED;
+    
+    // Left diode
+    pinMode(7,OUTPUT);
+    
+    // Right diode
+    pinMode(5,OUTPUT);
 
     tone(_pin_speaker,2000,100);
 
@@ -63,78 +69,26 @@ void Brain::InitializePins(byte pin_whiskers_left, byte pin_whiskers_right,
 
 void Brain::Run()
 {
-    bool whisker_left =  Brain::ReadWhiskers(_pin_whiskers_left);
-    bool whisker_right = Brain::ReadWhiskers(_pin_whiskers_right);
-
-    int ultrasonic_distance = Brain::ReadUltrasonic();
-
-    byte ir_left = Brain::ReadIR(_pin_ir_reciever_left,_pin_ir_transmitter_left);
-    byte ir_right = Brain::ReadIR(_pin_ir_reciever_right,_pin_ir_transmitter_right);
-
-    Brain::LogSensors(whisker_left, whisker_right, ultrasonic_distance, ir_left, ir_right);
-
-    switch(_current_state)
-    {
-        case STATE_SEARCH:
-            if (ir_left > 0 && ir_right>0){
-                _current_movement = STATE_BACKWARD;
-                _acceleration= RETARDATION;
-            } else if (ir_right >0)
-            {
-                _current_movement = STATE_ROTATE_LEFT;
-                _acceleration= RETARDATION;
-            }
-            else if (ir_left > 0){
-                _current_movement = STATE_ROTATE_RIGHT;
-                _acceleration= RETARDATION;
-            }
-            else {
-                _current_movement = STATE_FORWARD;
-            _acceleration= ACCELERATION;
-            
-                if (ultrasonic_distance< 20)
-                    tone(_pin_speaker,2000,20);
-                }
-                
-                if (ultrasonic_distance< 150)
-                    tone(_pin_speaker,2000,20);
-            break;
-        case STATE_LOCALIZE:
-            break;
-        case STATE_GOTO:
-            break;
-    }
-
-    switch(_current_movement)
-    {
-        case STATE_ROTATE_LEFT:
-            _servo_signal_left = 1450;
-            _servo_signal_right = 1450;
-            _servo_signal_wanted_left = 1450;
-            _servo_signal_wanted_right = 1450;
-            break;
-        case STATE_ROTATE_RIGHT:
-            _servo_signal_left = 1550;
-            _servo_signal_right = 1550;
-            _servo_signal_wanted_left = 1550;
-            _servo_signal_wanted_right = 1550;
-            break;
-        case STATE_FORWARD:
-            _servo_signal_left = 1550;
-            _servo_signal_right = 1450;
-            _servo_signal_wanted_left = 1550;
-            _servo_signal_wanted_right = 1450;
-            break;
-        case STATE_BACKWARD:
-            _servo_signal_left = 1450;
-            _servo_signal_right = 1550;
-            _servo_signal_wanted_left = 1450;
-            _servo_signal_wanted_right = 1550;
-            break;
-    }
-    //ChangeServoSignal();
-    _servo_left.writeMicroseconds(_servo_signal_left);
-    _servo_right.writeMicroseconds(_servo_signal_right);
+    // Diodes Left/Right:    7/5
+    bool ir_right = Brain::ReadIRBeacon(_pin_ir_reciever_right);
+    bool ir_left = Brain::ReadIRBeacon(_pin_ir_reciever_left);
+    
+    if (!ir_right)
+        digitalWrite(5,HIGH);
+    else
+        digitalWrite(5,LOW);
+    
+    if (!ir_left)
+        digitalWrite(7,HIGH);
+    else
+        digitalWrite(7,LOW);
+    
+    
+    Serial.print("IR left: ");
+    Serial.println(ir_left);
+    
+    Serial.print("IR right: ");
+    Serial.println(ir_right);
     
     delay(20);
 }
