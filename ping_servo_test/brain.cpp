@@ -22,7 +22,9 @@ void Brain::Run()
     int readings_upper[38] = {};
     int min_reading = 1000;
     int min_angle = 90;
-    /*
+    _servo_ping.write(45);
+    delay(60);
+    
     for (int i = 0; i <= 18; i++)
     {
         int angle = 45+i*5;
@@ -31,9 +33,7 @@ void Brain::Run()
         int ultra_lower=Brain::ReadUltrasonic4Pin();
         readings_lower[i]=ultra_lower;
         readings_upper[i]=ultra_upper;
-        Serial.print("diff");
-        Serial.println(ultra_upper-ultra_lower);
-        if (ultra_lower<min_reading && ultra_upper-ultra_lower>1)
+        if (ultra_lower<min_reading && abs(ultra_upper-ultra_lower)>5)
         {
             min_reading = ultra_lower;
             min_angle = angle;
@@ -48,9 +48,7 @@ void Brain::Run()
         int ultra_lower=Brain::ReadUltrasonic4Pin();
         readings_lower[i]=ultra_lower;
         readings_upper[i]=ultra_upper;
-        Serial.print("diff");
-        Serial.println(ultra_upper-ultra_lower);
-        if (ultra_lower<min_reading && ultra_upper-ultra_lower>1)
+        if (ultra_lower<min_reading && abs(ultra_upper-ultra_lower)>5)
         {
             min_reading = ultra_lower;
             min_angle = angle;
@@ -61,10 +59,17 @@ void Brain::Run()
     Serial.print("Best Length:");
     Serial.println(min_reading);
     
-    */
     Serial.print("Best angle:");
     Serial.println(min_angle);
+    /*
+    int ultra_upper= Brain::RCTime(_pin_sensor_ultrasonic_upper);
+    int ultra_lower=Brain::ReadUltrasonic4Pin();
     
+    Serial.print("Lower:");
+    Serial.println(ultra_lower);
+    
+    Serial.print("Upper:");
+    Serial.println(ultra_upper);*/
     
     _servo_ping.write(min_angle);
     
@@ -91,10 +96,8 @@ int Brain::ReadUltrasonic4Pin()
      digitalWrite(_pin_sensor_ultrasonic_trig,LOW);
      float duration = pulseIn(_pin_sensor_ultrasonic_echo, HIGH);
      float distance = duration/58.2;
-     Serial.print("Ultrasonic Lower:");
-     Serial.println(floor(distance));
      if (distance >= maximumRange || distance <= minimumRange){
-        distance = -1;
+        distance = 1000;
      }
 
 
@@ -111,6 +114,6 @@ int Brain::RCTime(byte pingPin){
   pinMode(pingPin, INPUT);           // Set pin to INPUT
   float duration = pulseIn(pingPin, HIGH); // Read echo pulse
   float distance = duration / 74 / 2 *2.54;        // Convert to cm 
-  delay(200);
+  delay(20);
   return floor(distance);
 }
