@@ -5,7 +5,7 @@ Brain brain;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  brain.InitializePins(4,6,13,12,9,3,8,2,11,10,5);
+  brain.InitializePins(4,6,13,12,9,3,0,2,8,6,5);
   // Whisker Left = 4
   // Whisker Right = 6
   // Servo Left = 13

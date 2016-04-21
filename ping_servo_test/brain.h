@@ -8,19 +8,25 @@
 class Brain
 {
     public:
-        void InitializePins(byte pin_servo_ping, byte pin_sensor_ultrasonic);
+        void InitializePins(byte pin_servo_ping, byte pin_sensor_ultrasonic_trig, byte pin_sensor_ultrasonic_echo, byte pin_sensor_ultrasonic_upper);
         void Run();
 
     private:
     
         byte _pin_servo_ping;
-        byte _pin_sensor_ultrasonic;
+        byte _pin_sensor_ultrasonic_trig;
+        byte _pin_sensor_ultrasonic_echo;
+        byte _pin_sensor_ultrasonic_upper;
         
         Servo _servo_ping;
         
         unsigned short _servo_ping_signal;
         
-        long RCTime(byte sensorIn);
+        int RCTime(byte sensorIn);
+        
+        int ReadUltrasonic();
+        
+        int ReadUltrasonic4Pin();
 };
 
 
