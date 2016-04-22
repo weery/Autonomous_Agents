@@ -85,41 +85,16 @@ void Brain::Run()
 
     Serial.println(ir_right_distance_reading);
     
-    /*
-    Brain::LogSensors(whisker_left, whisker_right, ultrasonic_distance, ir_left, ir_right);
-
     switch(_current_state)
     {
-        case STATE_SEARCH:
-            if (ir_left > 0 && ir_right>0){
-                _current_movement = STATE_BACKWARD;
-                _acceleration= RETARDATION;
-            } else if (ir_right >0)
-            {
-                _current_movement = STATE_ROTATE_LEFT;
-                _acceleration= RETARDATION;
-            }
-            else if (ir_left > 0){
-                _current_movement = STATE_ROTATE_RIGHT;
-                _acceleration= RETARDATION;
-            }
-            else {
-                _current_movement = STATE_FORWARD;
-            _acceleration= ACCELERATION;
-            
-                if (ultrasonic_distance< 20)
-                    tone(_pin_speaker,2000,20);
-                }
-                
-                if (ultrasonic_distance< 150)
-                    tone(_pin_speaker,2000,20);
+        case STATE_FIND_SAFEZONE:
             break;
-        case STATE_LOCALIZE:
+        case STATE_ROAM:
             break;
-        case STATE_GOTO:
+        case STATE_FIND_CAN:
             break;
     }
-
+    /*
     switch(_current_movement)
     {
         case STATE_ROTATE_LEFT:

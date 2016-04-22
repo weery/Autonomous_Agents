@@ -55,9 +55,9 @@ class Brain
         unsigned short _servo_signal_claw; // 0-180, 90 middle
         
         enum BrainStates{
-            STATE_SEARCH = 0,
-            STATE_LOCALIZE = 1,
-            STATE_GOTO = 2,
+            STATE_FIND_SAFEZONE = 0,
+            STATE_ROAM = 1,
+            STATE_FIND_CAN = 2,
         };
 
         enum MovementStates{
@@ -71,14 +71,7 @@ class Brain
 
         MovementStates _current_movement;
         
-        
         // Read sensors
-            // Ultrasonic 2 pins x
-            // ultrasonic 1 pin x
-            // Ir reciever x
-            // Ir reciever with transmitter x
-            // Phototransistor
-            
         int ReadUltrasonic2Pin(byte pin_echo, byte pin_trig);
         
         int ReadUltrasonic1Pin(byte pin);
@@ -92,7 +85,7 @@ class Brain
         byte ReadPhototransistor(byte pin_phototransistor);
         
         
-        
+        // other
         void LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_distance,
         byte ir_left, byte ir_right);
         
