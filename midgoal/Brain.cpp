@@ -93,6 +93,22 @@ void Brain::Run()
                 _current_state = STATE_STOP;
             }
         case STATE_ROAM:
+            leftDetected = ReadIrDistance(_pin_ir_reciever_left,_pin_ir_transmitter)>0;
+            rightDetected = ReadIrDistance(_pin_ir_reciever_right,_pin_ir_transmitter)>0;
+            if(leftDetected && rightDetected) {
+                r = rand() % 1;
+                if (r >0){
+                    _current_movement = STATE_BACKWARD_LEFT;
+                }else{
+                    _current_movement = STATE_BACKWARD_RIGHT;
+                }
+            }else if(leftDetected){
+                _current_movement = STATE_ROTATE_RIGHT;
+            }else if(rightDetected){
+                _current_movement = STATE_ROTATE_LEFT;
+            }else{
+                _current_movement = STATE_FORWARD;
+            }
             break;
         case STATE_FIND_CAN:
             break;
@@ -123,6 +139,14 @@ void Brain::Run()
             _servo_signal_right = 1550;
             _servo_signal_wanted_left = 1450;
             _servo_signal_wanted_right = 1550;
+            break;
+        case STATE_BACKWARD_LEFT:
+            _servo_signal_left = 1450;
+            _servo_signal_right = 1600;
+            break;
+        case STATE_BACKWARD_RIGHT:
+            _servo_signal_left = 1400;
+            _servo_signal_right = 1550;
             break;
     }
     //ChangeServoSignal();
