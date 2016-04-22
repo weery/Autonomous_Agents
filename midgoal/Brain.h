@@ -67,6 +67,8 @@ class Brain
             STATE_ROTATE_RIGHT = 2,
             STATE_FORWARD = 3,
             STATE_BACKWARD = 4,
+            STATE_BACKWARD_RIGHT =5,
+            STATE_BACKWARD_LEFT =6,
         };
 
         BrainStates _current_state;

@@ -5,7 +5,7 @@ Brain brain;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  brain.InitializePins(13,12,11,0,6,8,10,9,3,4,1);
+  brain.InitializePins(12,13,11,0,6,8,10,9,3,4,1);
   // Wheel left = 13 ? 
   // Wheel right = 12 ?
   // tower = 11 
