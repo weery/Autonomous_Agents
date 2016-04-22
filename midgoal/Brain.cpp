@@ -10,7 +10,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
     // Assign all pins
     _pin_servo_wheel_left= pin_servo_wheel_left;
     _pin_servo_wheel_right= pin_servo_wheel_right,
-    
+
     _pin_servo_tower= pin_servo_tower;
     _pin_servo_claw= pin_servo_claw;
 
@@ -18,16 +18,16 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
     _pin_ultrasonic_lower_trig= pin_ultrasonic_lower_trig;
 
     _pin_ultrasonic_upper= pin_ultrasonic_upper;
-    
+
     _pin_ir_reciever_left= pin_ir_reciever_left;
     _pin_ir_reciever_right= pin_ir_reciever_right;
-    
+
     _pin_ir_transmitter= pin_ir_transmitter;
-    
+
     _pin_phototransistor= pin_phototransistor;
 
     // Assign pin input/output
-    
+
     pinMode(_pin_ir_reciever_left,INPUT);
     pinMode(_pin_ir_reciever_right,INPUT);
 
@@ -35,31 +35,31 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     pinMode(_pin_ultrasonic_lower_trig,OUTPUT);
     pinMode(_pin_ultrasonic_lower_echo,INPUT);
-    
+
     // Initialize servos
-        
+
     _servo_wheel_left.attach(_pin_servo_wheel_left);
     _servo_wheel_right.attach(_pin_servo_wheel_right);
 
     _servo_tower.attach(_pin_servo_tower);
     _servo_claw.attach(_pin_servo_claw);
-    
-    
+
+
     _servo_signal_wheel_left = 1500;
     _servo_signal_wheel_right = 1500;
 
     _servo_signal_tower = 90;
-    
+
     _servo_signal_claw = 90;
-    
+
     _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
     _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
 
     _servo_tower.write(_servo_signal_tower);
-    
+
     _servo_claw.write(_servo_signal_claw);
-    
-    
+
+
     // Intialize states
     _current_state = STATE_SEARCH;
 
@@ -71,30 +71,33 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 void Brain::Run()
 {
     _update_counter=0;
-    
-    int ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig); 
+
+    int ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
     int ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
     byte phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
-    
+
     bool ir_left_reading = Brain::ReadIr(_pin_ir_reciever_left);
     bool ir_right_reading = Brain::ReadIr(_pin_ir_reciever_right);
-    
+
     byte ir_left_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_left,_pin_ir_transmitter);
     byte ir_right_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_right,_pin_ir_transmitter);
 
     Serial.println(ir_right_distance_reading);
-    
+
     switch(_current_state)
     {
         case STATE_FIND_SAFEZONE:
-            break;
+            if (phototransistor_reading < BLACK_PAPER_LIMIT)
+            {
+                _current_state = STATE_STOP;
+            }
         case STATE_ROAM:
             break;
         case STATE_FIND_CAN:
             break;
     }
-    /*
+    /*We could just name it "kyl" since that is the most accurate description of its function.
     switch(_current_movement)
     {
         case STATE_ROTATE_LEFT:
@@ -166,7 +169,7 @@ int Brain::ReadUltrasonic2Pin(byte pin_echo, byte pin_trig)
      if (distance >= maximumRange || distance <= minimumRange){
         distance = 1000;
      }
-     
+
      return floor(distance);
 }
 
@@ -180,7 +183,7 @@ int Brain::ReadUltrasonic1Pin(byte pin)
   digitalWrite(pin,LOW);        // End ranging
   pinMode(pin, INPUT);           // Set pin to INPUT
   float duration = pulseIn(pin, HIGH); // Read echo pulse
-  float distance = duration / 74 / 2 *2.54;        // Convert to cm 
+  float distance = duration / 74 / 2 *2.54;        // Convert to cm
   return floor(distance);
 }
 
