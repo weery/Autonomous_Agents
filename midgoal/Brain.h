@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 #include <Servo.h>
+#include <stdlib.h>
 
 class Brain
 {

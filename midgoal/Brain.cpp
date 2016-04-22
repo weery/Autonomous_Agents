@@ -61,7 +61,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
 
     // Intialize states
-    _current_state = STATE_SEARCH;
+    _current_state = STATE_FIND_CAN;
 
     _current_movement = STATE_FORWARD;
 
@@ -83,8 +83,12 @@ void Brain::Run()
     byte ir_left_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_left,_pin_ir_transmitter);
     byte ir_right_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_right,_pin_ir_transmitter);
 
+<<<<<<< 6902112cefd95ab11714b8b18008f55ae16d4c15
     Serial.println(ir_right_distance_reading);
 
+=======
+    
+>>>>>>> Can now fin a can.
     switch(_current_state)
     {
         case STATE_FIND_SAFEZONE:
@@ -111,35 +115,78 @@ void Brain::Run()
             }
             break;
         case STATE_FIND_CAN:
+            _current_movement = STATE_STOP;
+            byte max_angle = 135;
+            byte min_angle = 45;
+            byte increment = 5;
+            byte n_increments=(max_angle-min_angle)/increment;
+            byte min_reading = 255; 
+            byte min_reading_angle=90;
+            _servo_tower.write(min_angle);
+            delay(1000);
+            for (byte i = 0; i<n_increments;i++ )
+            {
+                byte angle = min_angle + i*(max_angle-min_angle)/(n_increments-1);
+                _servo_tower.write(angle);
+                delay(20);
+                ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig); 
+                ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
+                
+                if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>6)
+                {
+                    min_reading = ultrasonic_lower_reading;
+                    min_reading_angle= angle;
+                    Serial.println(min_reading_angle);
+                    
+                }
+            }
+            for (byte i = n_increments; i>0;i--)
+            {
+                byte angle = min_angle + (i-1)*(max_angle-min_angle)/(n_increments-1);
+                _servo_tower.write(angle);
+                delay(20);
+                ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig); 
+                ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
+                
+                if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>6)
+                {
+                    min_reading = ultrasonic_lower_reading;
+                    min_reading_angle= angle;
+                    Serial.println(min_reading_angle);
+                }
+            }
+            
+            _servo_tower.write(min_reading_angle);
+            delay(1000);
             break;
     }
+<<<<<<< 6902112cefd95ab11714b8b18008f55ae16d4c15
     /*We could just name it "kyl" since that is the most accurate description of its function.
+=======
+>>>>>>> Can now fin a can.
     switch(_current_movement)
     {
         case STATE_ROTATE_LEFT:
-            _servo_signal_left = 1450;
-            _servo_signal_right = 1450;
-            _servo_signal_wanted_left = 1450;
-            _servo_signal_wanted_right = 1450;
+            _servo_signal_wheel_left = 1450;
+            _servo_signal_wheel_right = 1450;
             break;
         case STATE_ROTATE_RIGHT:
-            _servo_signal_left = 1550;
-            _servo_signal_right = 1550;
-            _servo_signal_wanted_left = 1550;
-            _servo_signal_wanted_right = 1550;
+            _servo_signal_wheel_left = 1550;
+            _servo_signal_wheel_right = 1550;
             break;
         case STATE_FORWARD:
-            _servo_signal_left = 1550;
-            _servo_signal_right = 1450;
-            _servo_signal_wanted_left = 1550;
-            _servo_signal_wanted_right = 1450;
+            _servo_signal_wheel_left = 1550;
+            _servo_signal_wheel_right = 1450;
             break;
         case STATE_BACKWARD:
-            _servo_signal_left = 1450;
-            _servo_signal_right = 1550;
-            _servo_signal_wanted_left = 1450;
-            _servo_signal_wanted_right = 1550;
+            _servo_signal_wheel_left = 1450;
+            _servo_signal_wheel_right = 1550;
             break;
+        case STATE_STOP:
+            _servo_signal_wheel_left = 1500;
+            _servo_signal_wheel_right = 1500;
+            break;
+<<<<<<< 6902112cefd95ab11714b8b18008f55ae16d4c15
         case STATE_BACKWARD_LEFT:
             _servo_signal_left = 1450;
             _servo_signal_right = 1600;
@@ -148,7 +195,12 @@ void Brain::Run()
             _servo_signal_left = 1400;
             _servo_signal_right = 1550;
             break;
+=======
+        
+>>>>>>> Can now fin a can.
     }
+    
+    /*
     //ChangeServoSignal();
     _servo_left.writeMicroseconds(_servo_signal_left);
     _servo_right.writeMicroseconds(_servo_signal_right);
