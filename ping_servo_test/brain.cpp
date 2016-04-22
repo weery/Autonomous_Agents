@@ -104,16 +104,33 @@ int Brain::ReadUltrasonic4Pin()
      return floor(distance);
 }
     
-int Brain::RCTime(byte pingPin){
-  pinMode(pingPin, OUTPUT);          // Set pin to OUTPUT
-  digitalWrite(pingPin, LOW);        // Ensure pin is low
-  delayMicroseconds(2);
-  digitalWrite(pingPin, HIGH);       // Start ranging
-  delayMicroseconds(5);              //   with 5 microsecond burst
-  digitalWrite(pingPin, LOW);        // End ranging
-  pinMode(pingPin, INPUT);           // Set pin to INPUT
-  float duration = pulseIn(pingPin, HIGH); // Read echo pulse
-  float distance = duration / 74 / 2 *2.54;        // Convert to cm 
-  delay(20);
-  return floor(distance);
+bool ReadIr(byte pin_reciever)
+{
+    bool ir = digitalRead(pin_reciever);
+    return ir;
+    
+}   
+ 
+byte Brain::ReadIrDistance(byte pin_reciever, byte pin_transmitter)
+{
+    unsigned short frequencies[5] = {38000,39000,40000,41000,42000};
+    byte distances[5] = {40,35,30,25,20}; //TBD
+    byte distance = 0;
+    for(short i = 4; i >= 0; i--)
+    {
+        bool detection = Brain::ReadIrWithTransmitter(pin_transmitter, pin_reciever, frequencies[i]);
+        if (!detection){
+            distance = distances[i];
+            break;
+        }
+    }
+    return distance;
+}
+
+bool Brain::ReadIrWithTransmitter(byte pin_reciever, byte pin_transmitter, unsigned short frequency)
+{
+    tone(pin_transmitter, frequency, 8);
+    delay(1);
+    int ir = digitalRead(pin_reciever);
+    return ir;
 }
