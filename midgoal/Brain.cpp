@@ -116,23 +116,25 @@ void Brain::Run()
         case STATE_FIND_CAN:
         {
             _current_movement = STATE_STOP;
-            byte max_angle = 135;
-            byte min_angle = 45;
-            byte increment = 5;
-            byte n_increments=(max_angle-min_angle)/increment;
-            byte min_reading = 255; 
+            const byte MAX_ANGLE = 135;
+            const byte MIN_ANGLE = 45;
+            const byte INCREMENT = 5;
+            const byte N_INCREMENTS=(MAX_ANGLE-MIN_ANGLE)/INCREMENT;
+            const byte ULTRASONIC_DIFF_MARGIN = 6;
+
+            byte min_reading = 255;
             byte min_reading_angle=90;
-            _servo_tower.write(min_angle);
+            _servo_tower.write(MIN_ANGLE);
             delay(1000);
-            for (byte i = 0; i<n_increments;i++ )
+            for (byte i = 0; i<N_INCREMENTS;i++ )
             {
-                byte angle = min_angle + i*(max_angle-min_angle)/(n_increments-1);
+                byte angle = MIN_ANGLE + i*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
                 _servo_tower.write(angle);
                 delay(20);
-                ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig); 
+                ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
                 ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
                 
-                if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>6)
+                if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>ULTRASONIC_DIFF_MARGIN )
                 {
                     min_reading = ultrasonic_lower_reading;
                     min_reading_angle= angle;
@@ -140,15 +142,15 @@ void Brain::Run()
                     
                 }
             }
-            for (byte i = n_increments; i>0;i--)
+            for (byte i = N_INCREMENTS; i>0;i--)
             {
-                byte angle = min_angle + (i-1)*(max_angle-min_angle)/(n_increments-1);
+                byte angle = MIN_ANGLE + (i-1)*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
                 _servo_tower.write(angle);
                 delay(20);
                 ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig); 
                 ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
                 
-                if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>6)
+                if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>ULTRASONIC_DIFF_MARGIN)
                 {
                     min_reading = ultrasonic_lower_reading;
                     min_reading_angle= angle;
