@@ -6,7 +6,7 @@
 
 Servo servo;
 
-const byte servo_pin = 13;
+const byte servo_pin = 12;
 int calibration_speed = 1500;
 
 void setup() {

@@ -71,9 +71,16 @@ class Brain
             STATE_BACKWARD_LEFT =6,
         };
 
+        enum MovementActions{
+            ACTION_LOCKED = 0,
+            ACTION_UNDECIDED = 1,
+        };
+
         BrainStates _current_state;
 
         MovementStates _current_movement;
+
+        MovementActions _movement_action;
 
         // Read sensors
         int ReadUltrasonic2Pin(byte pin_echo, byte pin_trig);
@@ -96,6 +103,7 @@ class Brain
         const byte UPDATE_DELAY = 100;
         const byte BLACK_PAPER_LIMIT = 10;
         byte _update_counter;
+        byte movement_time = 0;
 };
 
 
