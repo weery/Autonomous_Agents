@@ -61,7 +61,7 @@
 
 
             // Intialize states
-            _current_state = STATE_FIND_SAFEZONE;
+            _current_state = STATE_FIND_CAN;
 
             _current_movement = STATE_FORWARD;
 
@@ -182,6 +182,8 @@
                     }
 
                     _servo_tower.write(min_reading_angle);
+                    Serial.println(min_reading_angle);
+                    Serial.println(min_reading);
                     delay(1000);
                     break;
                 }
