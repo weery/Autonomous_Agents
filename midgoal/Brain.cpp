@@ -61,7 +61,7 @@
 
 
             // Intialize states
-            _current_state = STATE_FIND_CAN;
+            _current_state = STATE_TEST_SENSOR;
 
             _current_movement = STATE_FORWARD;
 
@@ -87,6 +87,25 @@
 
             switch(_current_state)
             {
+                case STATE_TEST_SENSOR:
+                    ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
+                    ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
+                    
+                    ir_left_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_left,_pin_ir_transmitter);
+                    ir_right_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_right,_pin_ir_transmitter);
+                    _current_movement=STATE_STOP;
+                    Serial.print("Ultrasonic Lower Reading.");
+                    Serial.println(ultrasonic_lower_reading);
+                    Serial.print("Ultrasonic Upper Reading.");
+                    Serial.println(ultrasonic_upper_reading);
+                    Serial.println();
+                    Serial.print("IR SENSOR Left.");
+                    Serial.println(ir_left_distance_reading);
+                    Serial.print("IR SENSOR Right.");
+                    Serial.println(ir_right_distance_reading);
+                    Serial.println();
+                    delay(1000);
+                break;
                 case STATE_FIND_SAFEZONE:
                 {
                     if (phototransistor_reading < BLACK_PAPER_LIMIT)
@@ -295,7 +314,7 @@
         byte Brain::ReadIrDistance(byte pin_reciever, byte pin_transmitter)
         {
             unsigned short frequencies[5] = {38000,39000,40000,41000,42000};
-            byte distances[5] = {40,35,30,25,20};
+            byte distances[5] = {40,27,23,21,18};
             byte distance = 0;
             for(short i = 4; i >= 0; i--)
             {

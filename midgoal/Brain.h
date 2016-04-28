@@ -59,6 +59,7 @@ class Brain
             STATE_FIND_SAFEZONE = 0,
             STATE_ROAM = 1,
             STATE_FIND_CAN = 2,
+            STATE_TEST_SENSOR = 3,
         };
 
         enum MovementStates{
