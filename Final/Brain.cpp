@@ -61,7 +61,7 @@
 
 
             // Intialize states
-            _current_state = STATE_FIND_CAN;
+            _current_state = STATE_TEST_SENSOR;
 
             _current_movement = STATE_FORWARD;
 
@@ -87,6 +87,9 @@
 
             switch(_current_state)
             {
+                case STATE_TEST_SENSOR:
+                    Serial.println(ir_right_distance_reading);
+                break;
                 case STATE_FIND_SAFEZONE:
                 {
                     if (phototransistor_reading < BLACK_PAPER_LIMIT)
@@ -140,7 +143,7 @@
                     _current_movement = STATE_STOP;
                     const byte MAX_ANGLE = 135;
                     const byte MIN_ANGLE = 45;
-                    const byte INCREMENT = 5;
+                    const byte INCREMENT = 10;
                     const byte N_INCREMENTS=(MAX_ANGLE-MIN_ANGLE)/INCREMENT;
                     const byte ULTRASONIC_DIFF_MARGIN = 6;
 
@@ -152,7 +155,7 @@
                     {
                         byte angle = MIN_ANGLE + i*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
                         _servo_tower.write(angle);
-                        delay(20);
+                        delay(30);
                         ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
                         ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
@@ -168,7 +171,7 @@
                     {
                         byte angle = MIN_ANGLE + (i-1)*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
                         _servo_tower.write(angle);
-                        delay(20);
+                        delay(30);
                         ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
                         ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
