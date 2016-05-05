@@ -6,13 +6,13 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
         byte pin_ultrasonic_upper, byte pin_ir_reciever_left_front,
         byte pin_ir_reciever_right_front ,byte pin_ir_reciever_left_back,
         byte pin_ir_reciever_right_back,byte pin_ir_transmitter,
-        byte pin_phototransistor)
+        byte pin_phototransistor, byte pin_whiskers)
 {
     // Assign all pins
     _pin_servo_wheel_left= pin_servo_wheel_left;
     _pin_servo_wheel_right= pin_servo_wheel_right,
 
-        _pin_servo_tower= pin_servo_tower;
+    _pin_servo_tower= pin_servo_tower;
     _pin_servo_claw= pin_servo_claw;
 
     _pin_ultrasonic_lower_echo= pin_ultrasonic_lower_echo;
@@ -29,6 +29,9 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
     _pin_ir_transmitter= pin_ir_transmitter;
 
     _pin_phototransistor= pin_phototransistor;
+    
+    _pin_whiskers = pin_whiskers;
+    pinMode(_pin_whiskers,INPUT);
 
     // Assign pin input/output
 
@@ -101,6 +104,12 @@ void Brain::Run()
     switch(_current_state)
     {
         case STATE_TEST_SENSOR:
+                    _pin_servo_claw=45;
+                    _servo_claw.write(_pin_servo_claw);
+                    delay(1000);
+                    _pin_servo_claw=135;
+                    _servo_claw.write(_pin_servo_claw);
+                    Serial.println(digitalRead(_pin_whiskers));
             break;
         case STATE_FIND_SAFEZONE:
             {

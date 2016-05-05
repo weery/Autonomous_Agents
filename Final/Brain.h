@@ -15,7 +15,7 @@ class Brain
                             byte pin_ultrasonic_upper, byte pin_ir_reciever_left_front,
                             byte pin_ir_reciever_right_front,byte pin_ir_reciever_left_back,
                             byte pin_ir_reciever_right_back, byte pin_ir_transmitter,
-                            byte pin_phototransistor);
+                            byte pin_phototransistor, byte pin_whiskers);
         void Run();
 
     private:
@@ -41,6 +41,8 @@ class Brain
         byte _pin_ir_transmitter;
 
         byte _pin_phototransistor;
+        
+        byte _pin_whiskers;
 
     // Servos
         Servo _servo_wheel_left;
@@ -97,7 +99,7 @@ class Brain
         bool ReadIr(byte pin_reciever);
 
         bool ReadIrWithTransmitter(byte pin_reciever, byte pin_transmitter, unsigned short frequency);
-
+        
         byte ReadPhototransistor(byte pin_phototransistor);
 
 
