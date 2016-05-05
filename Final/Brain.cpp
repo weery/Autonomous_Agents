@@ -3,8 +3,9 @@
         void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
                                     byte pin_servo_tower, byte pin_servo_claw,
                                     byte pin_ultrasonic_lower_echo,byte pin_ultrasonic_lower_trig,
-                                    byte pin_ultrasonic_upper, byte pin_ir_reciever_left,
-                                    byte pin_ir_reciever_right,byte pin_ir_transmitter,
+                                    byte pin_ultrasonic_upper, byte pin_ir_reciever_left_front,
+                                    byte pin_ir_reciever_right_front ,byte pin_ir_reciever_left_back,
+                                    byte pin_ir_reciever_right_back,byte pin_ir_transmitter,
                                     byte pin_phototransistor)
         {
             // Assign all pins
@@ -19,8 +20,11 @@
 
             _pin_ultrasonic_upper= pin_ultrasonic_upper;
 
-            _pin_ir_reciever_left= pin_ir_reciever_left;
-            _pin_ir_reciever_right= pin_ir_reciever_right;
+            _pin_ir_reciever_left_front= pin_ir_reciever_left_front;
+            _pin_ir_reciever_right_front= pin_ir_reciever_right_front;
+            
+            _pin_ir_reciever_left_back= pin_ir_reciever_left_back;
+            _pin_ir_reciever_right_back= pin_ir_reciever_right_back;
 
             _pin_ir_transmitter= pin_ir_transmitter;
 
@@ -28,8 +32,11 @@
 
             // Assign pin input/output
 
-            pinMode(_pin_ir_reciever_left,INPUT);
-            pinMode(_pin_ir_reciever_right,INPUT);
+            pinMode(_pin_ir_reciever_left_front,INPUT);
+            pinMode(_pin_ir_reciever_right_front,INPUT);
+            
+            pinMode(_pin_ir_reciever_left_back,INPUT);
+            pinMode(_pin_ir_reciever_right_back,INPUT);
 
             pinMode(_pin_ir_transmitter,OUTPUT);
 
@@ -79,16 +86,21 @@
 
             byte phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
 
-            bool ir_left_reading = Brain::ReadIr(_pin_ir_reciever_left);
-            bool ir_right_reading = Brain::ReadIr(_pin_ir_reciever_right);
+            bool ir_left_front_reading = Brain::ReadIr(_pin_ir_reciever_left_front);
+            bool ir_right_front_reading = Brain::ReadIr(_pin_ir_reciever_right_front);
+            
+            bool ir_left_back_reading = Brain::ReadIr(_pin_ir_reciever_left_back);
+            bool ir_right_back_reading = Brain::ReadIr(_pin_ir_reciever_right_back);
 
-            byte ir_left_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_left,_pin_ir_transmitter);
-            byte ir_right_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_right,_pin_ir_transmitter);
+            byte ir_left_front_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter);
+            byte ir_right_front_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter);
+            
+            byte ir_left_back_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_left_back,_pin_ir_transmitter);
+            byte ir_right_back_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_right_back,_pin_ir_transmitter);
 
             switch(_current_state)
             {
                 case STATE_TEST_SENSOR:
-                    Serial.println(ir_right_distance_reading);
                 break;
                 case STATE_FIND_SAFEZONE:
                 {
@@ -115,8 +127,8 @@
                             case ACTION_UNDECIDED:
                             {
 
-                                bool leftDetected = Brain::ReadIrDistance(_pin_ir_reciever_left,_pin_ir_transmitter)>0;
-                                bool rightDetected = Brain::ReadIrDistance(_pin_ir_reciever_right,_pin_ir_transmitter)>0;
+                                bool leftDetected = Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter)>0;
+                                bool rightDetected = Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter)>0;
                                 if(leftDetected && rightDetected) {
                                     int r = rand() % 1;
                                     if (r >0){

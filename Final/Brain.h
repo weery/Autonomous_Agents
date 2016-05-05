@@ -12,8 +12,9 @@ class Brain
         void InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
                             byte pin_servo_tower, byte pin_servo_claw,
                             byte pin_ultrasonic_lower_echo,byte pin_ultrasonic_lower_trig,
-                            byte pin_ultrasonic_upper, byte pin_ir_reciever_left,
-                            byte pin_ir_reciever_right,byte pin_ir_transmitter,
+                            byte pin_ultrasonic_upper, byte pin_ir_reciever_left_front,
+                            byte pin_ir_reciever_right_front,byte pin_ir_reciever_left_back,
+                            byte pin_ir_reciever_right_back, byte pin_ir_transmitter,
                             byte pin_phototransistor);
         void Run();
 
@@ -31,8 +32,11 @@ class Brain
 
         byte _pin_ultrasonic_upper;
 
-        byte _pin_ir_reciever_left;
-        byte _pin_ir_reciever_right;
+        byte _pin_ir_reciever_left_front;
+        byte _pin_ir_reciever_right_front;
+        
+        byte _pin_ir_reciever_left_back;
+        byte _pin_ir_reciever_right_back;
 
         byte _pin_ir_transmitter;
 
