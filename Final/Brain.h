@@ -76,11 +76,24 @@ class Brain
             STATE_BACKWARD = 4,
             STATE_BACKWARD_RIGHT =5,
             STATE_BACKWARD_LEFT =6,
+            STATE_FORWARD_RIGHT =7,
+            STATE_FORWARD_LEFT =8,
         };
 
         enum MovementActions{
             ACTION_LOCKED = 0,
             ACTION_UNDECIDED = 1,
+        };
+        
+        enum Behaviours{
+            ROAM = 0, // Same as default
+            LOCALIZE_BEACON = 1, // Face beacon, else roam
+            GO_TO_BEACON = 2, // Go Towards the found beacon
+            LEAVE_CAN = 3, // When at safezone/beacon, release can and back
+            LOCALIZE_CAN = 4, // FInd can + reading
+            HEAD_TO_CAN = 5,
+            GO_TO_CAN = 6, // Go Towards found can
+            CATCH_CAN = 7, // When at can, lower arm
         };
 
         BrainStates _current_state;
@@ -88,6 +101,8 @@ class Brain
         MovementStates _current_movement;
 
         MovementActions _movement_action;
+        
+        Behaviours _current_behaviour;
 
         // Read sensors
         int ReadUltrasonic2Pin(byte pin_echo, byte pin_trig);
@@ -102,15 +117,31 @@ class Brain
         
         byte ReadPhototransistor(byte pin_phototransistor);
 
+        unsigned short Clamp(unsigned short val, unsigned short max, unsigned short min);
 
         // other
         void LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_distance,
         byte ir_left, byte ir_right);
+        
+        byte _update_counter;
 
         const byte UPDATE_DELAY = 100;
         const byte BLACK_PAPER_LIMIT = 10;
-        byte _update_counter;
+        
+        byte _can_reading;
+        byte _can_angle;
+        
         byte movement_time = 0;
+        
+        // servo constants
+        const byte MAX_ANGLE = 135; 
+        const byte MIDDLE_ANGLE = 90;
+        const byte MIN_ANGLE = 45;
+        const unsigned short MAX_SIGNAL = 1600;
+        const unsigned short MIDDLE_SIGNAL = 1500;
+        const unsigned short MIN_SIGNAL = 1400;
+        // Find can constants
+        const byte ULTRASONIC_DIFF_MARGIN = 6;
 };
 
 

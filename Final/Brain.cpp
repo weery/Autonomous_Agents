@@ -76,6 +76,8 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
     _current_movement = STATE_FORWARD;
 
     _movement_action = ACTION_UNDECIDED;
+    
+    _current_behaviour = ROAM;
 
     delay(100);
 }
@@ -84,29 +86,235 @@ void Brain::Run()
 {
     _update_counter=0;
 
-    int ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
-    int ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
+    // Example of how to get the different readings
+    int ultrasonic_lower_reading;
+    //= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
+    int ultrasonic_upper_reading;
+    //= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
-    byte phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
+    byte phototransistor_reading;
+    // = Brain::ReadPhototransistor(_pin_phototransistor);
 
-    bool ir_left_front_reading = Brain::ReadIr(_pin_ir_reciever_left_front);
-    bool ir_right_front_reading = Brain::ReadIr(_pin_ir_reciever_right_front);
+    bool ir_left_front_reading;
+    //    = Brain::ReadIr(_pin_ir_reciever_left_front);
+    bool ir_right_front_reading;
+    //= Brain::ReadIr(_pin_ir_reciever_right_front);
 
-    bool ir_left_back_reading = Brain::ReadIr(_pin_ir_reciever_left_back);
-    bool ir_right_back_reading = Brain::ReadIr(_pin_ir_reciever_right_back);
+    bool ir_left_back_reading;
+        //= Brain::ReadIr(_pin_ir_reciever_left_back);
+    bool ir_right_back_reading;
+    //= Brain::ReadIr(_pin_ir_reciever_right_back);
 
-    byte ir_left_front_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter);
-    byte ir_right_front_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter);
+    // Always initialized as they are used for collision detection which is always imminent
+    byte ir_left_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter);
+    byte ir_right_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter);
 
-    byte ir_left_back_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_left_back,_pin_ir_transmitter);
-    byte ir_right_back_distance_reading = Brain::ReadIrDistance(_pin_ir_reciever_right_back,_pin_ir_transmitter);
+    byte ir_left_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_back,_pin_ir_transmitter);
+    byte ir_right_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_back,_pin_ir_transmitter);
+    
+    bool whiskers_reading;
+    // =digitalRead(_pin_whiskers);
+    
+    switch(_current_behaviour)
+    {
+        
+        case LOCALIZE_BEACON:
+            ir_left_front_reading = Brain::ReadIr(_pin_ir_reciever_left_front);
+            ir_right_front_reading = Brain::ReadIr(_pin_ir_reciever_right_front);
 
+            ir_left_back_reading = Brain::ReadIr(_pin_ir_reciever_left_back);
+            ir_right_back_reading = Brain::ReadIr(_pin_ir_reciever_right_back);
+            
+            if (movement_time > 100)
+            {
+                movement_time = 0;
+                _current_behaviour = ROAM;
+                int random_heading = rand() % 5;
+                if (random_heading == 0)
+                    _current_movement = STATE_FORWARD;
+                else if (random_heading == 1)
+                    _current_movement = STATE_ROTATE_LEFT;
+                else if (random_heading == 2)
+                    _current_movement = STATE_ROTATE_RIGHT;
+                else if (random_heading == 3)
+                    _current_movement = STATE_FORWARD_LEFT;
+                else if (random_heading == 4)
+                    _current_movement = STATE_FORWARD_RIGHT;
+            }
+            else
+            {
+                if (ir_left_back_reading)
+                    _current_movement = STATE_ROTATE_LEFT;
+                else if (ir_right_back_reading)
+                    _current_movement = STATE_ROTATE_RIGHT;
+                else if (ir_right_front_reading && ir_left_front_reading)
+                {
+                    _current_behaviour = GO_TO_BEACON;
+                    movement_time=0;
+                }
+                else if (ir_left_front_reading)
+                    _current_movement = STATE_ROTATE_LEFT;
+                else if (ir_right_front_reading)
+                    _current_movement = STATE_ROTATE_RIGHT;
+                
+                movement_time++;
+            }
+        break;
+        case GO_TO_BEACON:
+            phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor); 
+            
+            if (phototransistor_reading < BLACK_PAPER_LIMIT)
+            {
+                movement_time = 0;
+                _current_behaviour = LEAVE_CAN;
+                break;
+            }
+            if (movement_time > 10)
+            {
+                _current_behaviour = LOCALIZE_BEACON;
+                movement_time = 0;
+                _current_movement = STATE_STOP;
+            }
+            else 
+            {
+                _current_movement = STATE_FORWARD;
+                movement_time++;
+            }
+        break;
+        case LEAVE_CAN:
+            _servo_signal_claw = MIDDLE_ANGLE;
+            if (movement_time > 10)
+            {
+                _current_behaviour = LOCALIZE_CAN;
+                movement_time=0;
+                _current_movement = STATE_STOP;
+            }
+            else
+            {
+                _current_movement = STATE_BACKWARD;
+                movement_time++;
+            }
+            
+        break;
+        case LOCALIZE_CAN:
+            _current_movement = STATE_STOP;
+            if (movement_time >= 19)
+            {
+                movement_time =0;
+                _servo_signal_tower = MIDDLE_ANGLE;
+                if (_can_reading < 255)
+                {
+                    _current_behaviour = HEAD_TO_CAN;
+                }
+                else
+                {
+                    _current_behaviour = ROAM;
+                    int random_heading = rand() % 5;
+                        if (random_heading == 0)
+                            _current_movement = STATE_FORWARD;
+                else if (random_heading == 1)
+                    _current_movement = STATE_ROTATE_LEFT;
+                else if (random_heading == 2)
+                    _current_movement = STATE_ROTATE_RIGHT;
+                else if (random_heading == 3)
+                    _current_movement = STATE_FORWARD_LEFT;
+                else if (random_heading == 4)
+                    _current_movement = STATE_FORWARD_RIGHT;
+                }
+            }
+            ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
+            ultrasonic_upper_reading= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
+            
+            if (ultrasonic_lower_reading< _can_reading && abs(ultrasonic_lower_reading-ultrasonic_upper_reading)> ULTRASONIC_DIFF_MARGIN)
+            {
+                _can_angle = _servo_signal_tower;
+                _can_reading = ultrasonic_lower_reading;
+            }
+            _servo_signal_tower+=5;
+            movement_time++;
+        break;
+        case HEAD_TO_CAN:
+            ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
+            if (movement_time > 20)
+            {
+                movement_time=0;
+                _current_behaviour = LOCALIZE_CAN;
+                _can_reading=255;
+                _can_angle=MIDDLE_ANGLE;
+                _servo_signal_tower = MIN_ANGLE;
+            }
+            if (abs(ultrasonic_lower_reading-_can_reading)<3)
+            {
+                movement_time =0;
+                _current_behaviour = GO_TO_CAN;
+            }
+            else if (_can_angle>MIDDLE_ANGLE )
+            {
+                _current_movement = STATE_ROTATE_RIGHT;
+            }
+            else if (_can_angle< MIDDLE_ANGLE)
+            {
+                _current_movement = STATE_ROTATE_LEFT;
+            }
+            else 
+            {
+                 movement_time =0;
+                _current_behaviour = GO_TO_CAN;   
+            }
+        break;
+        case GO_TO_CAN:
+            _current_movement=STATE_FORWARD;
+            whiskers_reading = digitalRead(_pin_whiskers);
+            if (whiskers_reading)
+            {
+                movement_time =0;
+                _current_behaviour = CATCH_CAN;
+                _current_movement=STATE_STOP;
+            }
+        
+        break;
+        case CATCH_CAN:
+            _current_movement=STATE_STOP;
+            _servo_signal_claw = MIN_ANGLE;
+            if (movement_time > 10)
+            {
+                _current_behaviour = LOCALIZE_BEACON;
+                movement_time =0;
+            }
+            movement_time++;
+        break;
+        case ROAM:
+        whiskers_reading = digitalRead(_pin_whiskers);
+        if (movement_time>20)
+        {
+            movement_time =0;
+            _current_movement = STATE_STOP;
+            if (whiskers_reading)
+                _current_behaviour = LOCALIZE_BEACON;
+            else
+            {
+                _current_behaviour = LOCALIZE_CAN;
+                _can_reading=255;
+                _can_angle=MIDDLE_ANGLE;
+                _servo_signal_tower = MIN_ANGLE;
+            }
+        }
+        else
+        {
+            // Random walk
+            movement_time++;
+        }
+        break;
+    }
+    
+    /* _current_state
     switch(_current_state)
     {
         case STATE_TEST_SENSOR:
                     _pin_servo_claw=45;
                     _servo_claw.write(_pin_servo_claw);
                     delay(1000);
+                    _update_counter+=1000;
                     _pin_servo_claw=135;
                     _servo_claw.write(_pin_servo_claw);
                     Serial.println(digitalRead(_pin_whiskers));
@@ -172,11 +380,13 @@ void Brain::Run()
                 byte min_reading_angle=90;
                 _servo_tower.write(MIN_ANGLE);
                 delay(1000);
+                    _update_counter+=1000;
                 for (byte i = 0; i<N_INCREMENTS;i++ )
                 {
                     byte angle = MIN_ANGLE + i*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
                     _servo_tower.write(angle);
                     delay(30);
+                    _update_counter+=30;
                     ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
                     ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
@@ -193,6 +403,7 @@ void Brain::Run()
                     byte angle = MIN_ANGLE + (i-1)*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
                     _servo_tower.write(angle);
                     delay(30);
+                    _update_counter+=30;
                     ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
                     ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
@@ -209,10 +420,14 @@ void Brain::Run()
                 Serial.println(min_reading_angle);
                 Serial.println(min_reading);
                 delay(1000);
+                    _update_counter+=1000;
                 break;
             }
     }
-    switch(_current_movement)
+    */
+    
+    // ADD COLLISION AVOIDANCE
+   switch(_current_movement)
     {
         case STATE_ROTATE_LEFT:
             _servo_signal_wheel_left = 1450;
@@ -243,13 +458,28 @@ void Brain::Run()
             _servo_signal_wheel_right = 1550;
             break;
     }
+
+    Serial.print("Current Behaviour: ");
+    Serial.println(_current_behaviour);
+    
+    Serial.print("Current Movement: ");
+    Serial.println(_current_movement);
+    
+   _servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
+    _servo_signal_wheel_right = Brain::Clamp(_servo_signal_wheel_right,MAX_SIGNAL,MIN_SIGNAL);
+    
     _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
     _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
-    /*
-    //ChangeServoSignal();
-    _servo_left.writeMicroseconds(_servo_signal_left);
-    _servo_right.writeMicroseconds(_servo_signal_right);
-    */
+    
+    _servo_signal_claw = Brain::Clamp(_servo_signal_claw,MAX_ANGLE,MIN_ANGLE);
+    
+    _servo_claw.write(_servo_signal_claw);
+    
+    _servo_signal_tower = Brain::Clamp(_servo_signal_tower,MAX_ANGLE,MIN_ANGLE);
+    
+    _servo_tower.write(_servo_signal_tower);
+    
+    
     byte remaining_delay=UPDATE_DELAY-_update_counter;
     delay(remaining_delay);
 }
@@ -271,6 +501,15 @@ void Brain::LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_dis
 
     Serial.print(" IR Right: ");
     Serial.println(ir_right);
+}
+
+unsigned short Brain::Clamp(unsigned short val, unsigned short max, unsigned short min)
+{
+    if (val > max )
+        return val;
+    else if (val < min)
+        return min;
+    return val;
 }
 
 int Brain::ReadUltrasonic2Pin(byte pin_echo, byte pin_trig)
@@ -312,6 +551,7 @@ bool Brain::ReadIrWithTransmitter(byte pin_reciever, byte pin_transmitter, unsig
 {
     tone(pin_transmitter, frequency, 8);
     delay(1);
+    _update_counter+=1;
     bool ir = digitalRead(pin_reciever);
     return ir;
 }
