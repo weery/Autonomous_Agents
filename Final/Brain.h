@@ -14,8 +14,9 @@ class Brain
                             byte pin_ultrasonic_lower_echo,byte pin_ultrasonic_lower_trig,
                             byte pin_ultrasonic_upper, byte pin_ir_reciever_left_front,
                             byte pin_ir_reciever_right_front,byte pin_ir_reciever_left_back,
-                            byte pin_ir_reciever_right_back, byte pin_ir_transmitter,
-                            byte pin_phototransistor, byte pin_whiskers);
+                            byte pin_ir_reciever_right_back, byte pin_ir_transmitter_left_front,
+                            byte pin_ir_transmitter_right_front, byte pin_ir_transmitter_left_back,
+                            byte pin_ir_transmitter_richt_back, byte pin_phototransistor, byte pin_whiskers);
         void Run();
 
     private:
@@ -38,7 +39,11 @@ class Brain
         byte _pin_ir_reciever_left_back;
         byte _pin_ir_reciever_right_back;
 
-        byte _pin_ir_transmitter;
+        byte _pin_ir_transmitter_left_front;
+        byte _pin_ir_transmitter_right_front;
+        
+        byte _pin_ir_transmitter_left_back;
+        byte _pin_ir_transmitter_right_back;
 
         byte _pin_phototransistor;
 
@@ -72,6 +77,8 @@ class Brain
             STATE_STOP = 0,
             STATE_ROTATE_LEFT = 1,
             STATE_ROTATE_RIGHT = 2,
+            STATE_ROTATE_LEFT_SLOWLY = 9,
+            STATE_ROTATE_RIGHT_SLOWLY = 10,
             STATE_FORWARD = 3,
             STATE_BACKWARD = 4,
             STATE_BACKWARD_RIGHT =5,

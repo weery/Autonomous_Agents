@@ -5,8 +5,9 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
         byte pin_ultrasonic_lower_echo,byte pin_ultrasonic_lower_trig,
         byte pin_ultrasonic_upper, byte pin_ir_reciever_left_front,
         byte pin_ir_reciever_right_front ,byte pin_ir_reciever_left_back,
-        byte pin_ir_reciever_right_back,byte pin_ir_transmitter,
-        byte pin_phototransistor, byte pin_whiskers)
+        byte pin_ir_reciever_right_back,byte pin_ir_transmitter_left_front,
+        byte pin_ir_transmitter_right_front, byte pin_ir_transmitter_left_back,
+        byte pin_ir_transmitter_right_back, byte pin_phototransistor, byte pin_whiskers)
 {
     // Assign all pins
     _pin_servo_wheel_left= pin_servo_wheel_left;
@@ -25,8 +26,12 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _pin_ir_reciever_left_back= pin_ir_reciever_left_back;
     _pin_ir_reciever_right_back= pin_ir_reciever_right_back;
-
-    _pin_ir_transmitter= pin_ir_transmitter;
+    
+    _pin_ir_transmitter_left_front = pin_ir_transmitter_left_front;
+    _pin_ir_transmitter_right_front = pin_ir_transmitter_right_front;
+        
+    _pin_ir_transmitter_left_back = pin_ir_transmitter_left_back;
+    _pin_ir_transmitter_right_back = pin_ir_transmitter_right_back;
 
     _pin_phototransistor= pin_phototransistor;
 
@@ -41,7 +46,10 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
     pinMode(_pin_ir_reciever_left_back,INPUT);
     pinMode(_pin_ir_reciever_right_back,INPUT);
 
-    pinMode(_pin_ir_transmitter,OUTPUT);
+    pinMode(_pin_ir_transmitter_left_front,OUTPUT);
+    pinMode(_pin_ir_transmitter_right_front,OUTPUT);
+    pinMode(_pin_ir_transmitter_left_back,OUTPUT);
+    pinMode(_pin_ir_transmitter_right_back,OUTPUT);
 
     pinMode(_pin_ultrasonic_lower_trig,OUTPUT);
     pinMode(_pin_ultrasonic_lower_echo,INPUT);
@@ -77,7 +85,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = TEST_SENSOR;
+    _current_behaviour = LOCALIZE_BEACON;
 
     delay(100);
 }
@@ -106,11 +114,11 @@ void Brain::Run()
     //= Brain::ReadIr(_pin_ir_reciever_right_back);
 
     // Always initialized as they are used for collision detection which is always imminent
-    byte ir_left_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter);
-    byte ir_right_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter);
+    byte ir_left_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter_left_front);
+    byte ir_right_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter_right_front);
 
-    byte ir_left_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_back,_pin_ir_transmitter);
-    byte ir_right_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_back,_pin_ir_transmitter);
+    byte ir_left_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_back,_pin_ir_transmitter_left_back);
+    byte ir_right_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_back,_pin_ir_transmitter_right_back);
 
     bool whiskers_reading;
     // =digitalRead(_pin_whiskers);
@@ -307,11 +315,12 @@ void Brain::Run()
             break;
         case TEST_SENSOR:
             whiskers_reading = digitalRead(_pin_whiskers);
-            if (whiskers_reading) {
-                _servo_signal_claw = 45;
+            if (!whiskers_reading) {
+                _servo_signal_claw = 135;
             } else {
                 _servo_signal_claw = 90;
             }
+            Serial.print("Whiskers reading: ");
             Serial.println(whiskers_reading);
             break;
     }
@@ -438,6 +447,13 @@ void Brain::Run()
     // ADD COLLISION AVOIDANCE
    switch(_current_movement)
     {
+        case STATE_ROTATE_LEFT_SLOWLY:
+            _servo_signal_wheel_left = 1490;
+            _servo_signal_wheel_right = 1490;
+            break;
+        case STATE_ROTATE_RIGHT_SLOWLY:
+            _servo_signal_wheel_left = 1510;
+            _servo_signal_wheel_right = 1510;
         case STATE_ROTATE_LEFT:
             _servo_signal_wheel_left = 1450;
             _servo_signal_wheel_right = 1450;
@@ -468,11 +484,11 @@ void Brain::Run()
             break;
     }
 
-    Serial.print("Current Behaviour: ");
-    Serial.println(_current_behaviour);
+    //Serial.print("Current Behaviour: ");
+    //Serial.println(_current_behaviour);
 
-    Serial.print("Current Movement: ");
-    Serial.println(_current_movement);
+    //Serial.print("Current Movement: ");
+    //Serial.println(_current_movement);
 
    _servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
     _servo_signal_wheel_right = Brain::Clamp(_servo_signal_wheel_right,MAX_SIGNAL,MIN_SIGNAL);
@@ -480,8 +496,12 @@ void Brain::Run()
     _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
     _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
 
+    //Serial.print("Before clamp");
+    //Serial.println(_servo_signal_claw);
     _servo_signal_claw = Brain::Clamp(_servo_signal_claw,MAX_ANGLE,MIN_ANGLE);
-
+    //Serial.print("After Clamp");
+    //Serial.println(_servo_signal_claw);
+    
     _servo_claw.write(_servo_signal_claw);
 
     _servo_signal_tower = Brain::Clamp(_servo_signal_tower,MAX_ANGLE,MIN_ANGLE);
@@ -515,7 +535,7 @@ void Brain::LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_dis
 unsigned short Brain::Clamp(unsigned short val, unsigned short max, unsigned short min)
 {
     if (val > max )
-        return val;
+        return max;
     else if (val < min)
         return min;
     return val;
