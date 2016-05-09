@@ -34,14 +34,14 @@ class Brain
 
         byte _pin_ir_reciever_left_front;
         byte _pin_ir_reciever_right_front;
-        
+
         byte _pin_ir_reciever_left_back;
         byte _pin_ir_reciever_right_back;
 
         byte _pin_ir_transmitter;
 
         byte _pin_phototransistor;
-        
+
         byte _pin_whiskers;
 
     // Servos
@@ -84,7 +84,7 @@ class Brain
             ACTION_LOCKED = 0,
             ACTION_UNDECIDED = 1,
         };
-        
+
         enum Behaviours{
             ROAM = 0, // Same as default
             LOCALIZE_BEACON = 1, // Face beacon, else roam
@@ -94,6 +94,7 @@ class Brain
             HEAD_TO_CAN = 5,
             GO_TO_CAN = 6, // Go Towards found can
             CATCH_CAN = 7, // When at can, lower arm
+            TEST_SENSOR = 8,
         };
 
         BrainStates _current_state;
@@ -101,7 +102,7 @@ class Brain
         MovementStates _current_movement;
 
         MovementActions _movement_action;
-        
+
         Behaviours _current_behaviour;
 
         // Read sensors
@@ -114,7 +115,7 @@ class Brain
         bool ReadIr(byte pin_reciever);
 
         bool ReadIrWithTransmitter(byte pin_reciever, byte pin_transmitter, unsigned short frequency);
-        
+
         byte ReadPhototransistor(byte pin_phototransistor);
 
         unsigned short Clamp(unsigned short val, unsigned short max, unsigned short min);
@@ -122,19 +123,19 @@ class Brain
         // other
         void LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_distance,
         byte ir_left, byte ir_right);
-        
+
         byte _update_counter;
 
         const byte UPDATE_DELAY = 100;
         const byte BLACK_PAPER_LIMIT = 10;
-        
+
         byte _can_reading;
         byte _can_angle;
-        
+
         byte movement_time = 0;
-        
+
         // servo constants
-        const byte MAX_ANGLE = 135; 
+        const byte MAX_ANGLE = 135;
         const byte MIDDLE_ANGLE = 90;
         const byte MIN_ANGLE = 45;
         const unsigned short MAX_SIGNAL = 1600;
