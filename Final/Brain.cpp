@@ -567,10 +567,10 @@ bool Brain::ReadIrWithTransmitter(byte pin_reciever, byte pin_transmitter, unsig
 
 byte Brain::ReadIrDistance(byte pin_reciever, byte pin_transmitter)
 {
-    unsigned short frequencies[5] = {38000,39000,40000,41000,42000};
-    byte distances[5] = {40,35,30,25,20};
+    unsigned short frequencies[4] = {38000,40500,45000,52000};
+    byte distances[4] = {26,21,15,10};
     byte distance = 0;
-    for(short i = 4; i >= 0; i--)
+    for(short i = 3; i >= 0; i--)
     {
         bool detection = Brain::ReadIrWithTransmitter(pin_reciever,pin_transmitter, frequencies[i]);
         if (!detection){
