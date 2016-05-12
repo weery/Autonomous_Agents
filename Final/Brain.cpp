@@ -121,6 +121,7 @@ void Brain::Run()
     byte ir_right_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_back,_pin_ir_transmitter_right_back);
 
     bool whiskers_reading;
+    Serial.println(_current_behaviour);
     // =digitalRead(_pin_whiskers);
 
     switch(_current_behaviour)
@@ -214,21 +215,20 @@ void Brain::Run()
                 {
                     _current_behaviour = HEAD_TO_CAN;
                 }
-                else
-                {
-                    _current_behaviour = ROAM;
-                    int random_heading = rand() % 5;
-                    if (random_heading == 0)
-                        _current_movement = STATE_FORWARD;
-                    else if (random_heading == 1)
-                        _current_movement = STATE_ROTATE_LEFT;
-                    else if (random_heading == 2)
-                        _current_movement = STATE_ROTATE_RIGHT;
-                    else if (random_heading == 3)
-                        _current_movement = STATE_FORWARD_LEFT;
-                    else if (random_heading == 4)
-                        _current_movement = STATE_FORWARD_RIGHT;
-                }
+                //else {
+                    //_current_behaviour = ROAM;
+                    //int random_heading = rand() % 5;
+                    //if (random_heading == 0)
+                        //_current_movement = STATE_FORWARD;
+                    //else if (random_heading == 1)
+                        //_current_movement = STATE_ROTATE_LEFT;
+                    //else if (random_heading == 2)
+                        //_current_movement = STATE_ROTATE_RIGHT;
+                    //else if (random_heading == 3)
+                        //_current_movement = STATE_FORWARD_LEFT;
+                    //else if (random_heading == 4)
+                        //_current_movement = STATE_FORWARD_RIGHT;
+                //}
             }
             ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
             ultrasonic_upper_reading= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
@@ -250,29 +250,32 @@ void Brain::Run()
                 _can_reading=255;
                 _can_angle=MIDDLE_ANGLE;
                 _servo_signal_tower = MIN_ANGLE;
+                break;
             }
-            if (abs(ultrasonic_lower_reading-_can_reading)<3)
+            if (abs(ultrasonic_lower_reading - _can_reading)<3)
             {
                 movement_time =0;
                 _current_behaviour = GO_TO_CAN;
             }
             else if (_can_angle>MIDDLE_ANGLE )
             {
-                _current_movement = STATE_ROTATE_RIGHT;
+                _current_movement = STATE_ROTATE_RIGHT_SLOWLY;
             }
             else if (_can_angle< MIDDLE_ANGLE)
             {
-                _current_movement = STATE_ROTATE_LEFT;
+                _current_movement = STATE_ROTATE_LEFT_SLOWLY;
             }
             else
             {
                 movement_time =0;
                 _current_behaviour = GO_TO_CAN;
             }
+            movement_time++;
             break;
         case GO_TO_CAN:
             _current_movement=STATE_FORWARD;
             whiskers_reading = digitalRead(_pin_whiskers);
+            Serial.println(whiskers_reading);
             if (whiskers_reading)
             {
                 movement_time =0;
@@ -292,10 +295,9 @@ void Brain::Run()
             movement_time++;
             break;
         case ROAM:
-            switch(_movement_action)
-            {
-                case ACTION_LOCKED:
-                    {
+            if (movement_time > 20) {
+                switch(_movement_action) {
+                    case ACTION_LOCKED:
                         movement_time++;
                         if (movement_time == 5)
                         {
@@ -303,10 +305,7 @@ void Brain::Run()
                             movement_time = 0;
                         }
                         break;
-                    }
-                case ACTION_UNDECIDED:
-                    {
-                        Serial.println(ir_left_front_distance_reading);
+                    case ACTION_UNDECIDED:
                         bool leftDetected = ir_left_front_distance_reading>0;
                         bool rightDetected = ir_right_front_distance_reading>0;
                         if(leftDetected && rightDetected) {
@@ -326,31 +325,20 @@ void Brain::Run()
                             _current_movement = STATE_FORWARD;
                         }
                         break;
-                    }
+                }
+            } else {
+                if (has_can) {
+                    _current_behaviour = LOCALIZE_BEACON;
+                } else {
+                    _current_behaviour = LOCALIZE_CAN;
+                    _can_reading = 255;
+                    _can_angle = MAX_ANGLE;
+                    _servo_signal_tower = MIN_ANGLE;
+                }
+                movement_time = 0;
+                _current_movement = STATE_STOP;
             }
             break;
-        //case ROAM:
-            //whiskers_reading = digitalRead(_pin_whiskers);
-            //if (movement_time>20)
-            //{
-                //movement_time =0;
-                //_current_movement = STATE_STOP;
-                //if (whiskers_reading)
-                    //_current_behaviour = LOCALIZE_BEACON;
-                //else
-                //{
-                    //_current_behaviour = LOCALIZE_CAN;
-                    //_can_reading=255;
-                    //_can_angle=MIDDLE_ANGLE;
-                    //_servo_signal_tower = MIN_ANGLE;
-                //}
-            //}
-            //else
-            //{
-                //// Random walk
-                //movement_time++;
-            //}
-            //break;
         case TEST_SENSOR:
             whiskers_reading = digitalRead(_pin_whiskers);
             if (!whiskers_reading) {
@@ -486,12 +474,13 @@ void Brain::Run()
 switch(_current_movement)
 {
     case STATE_ROTATE_LEFT_SLOWLY:
-        _servo_signal_wheel_left = 1490;
-        _servo_signal_wheel_right = 1490;
+        _servo_signal_wheel_left = 1480;
+        _servo_signal_wheel_right = 1480;
         break;
     case STATE_ROTATE_RIGHT_SLOWLY:
-        _servo_signal_wheel_left = 1510;
-        _servo_signal_wheel_right = 1510;
+        _servo_signal_wheel_left = 1520;
+        _servo_signal_wheel_right = 1520;
+        break;
     case STATE_ROTATE_LEFT:
         _servo_signal_wheel_left = 1450;
         _servo_signal_wheel_right = 1450;

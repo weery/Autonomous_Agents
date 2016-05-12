@@ -41,7 +41,7 @@ class Brain
 
         byte _pin_ir_transmitter_left_front;
         byte _pin_ir_transmitter_right_front;
-        
+
         byte _pin_ir_transmitter_left_back;
         byte _pin_ir_transmitter_right_back;
 
@@ -140,6 +140,8 @@ class Brain
         byte _can_angle;
 
         byte movement_time = 0;
+
+        bool has_can = false;
 
         // servo constants
         const byte MAX_ANGLE = 135;
