@@ -274,8 +274,7 @@ void Brain::Run()
             break;
         case GO_TO_CAN:
             _current_movement=STATE_FORWARD;
-            whiskers_reading = digitalRead(_pin_whiskers);
-            Serial.println(whiskers_reading);
+            whiskers_reading = !digitalRead(_pin_whiskers);
             if (whiskers_reading)
             {
                 movement_time =0;
@@ -286,8 +285,8 @@ void Brain::Run()
             break;
         case CATCH_CAN:
             _current_movement=STATE_STOP;
-            _servo_signal_claw = MIN_ANGLE;
-            if (movement_time > 10)
+            _servo_signal_claw = MAX_ANGLE;
+            if (movement_time > 3)
             {
                 _current_behaviour = LOCALIZE_BEACON;
                 movement_time =0;
@@ -340,12 +339,12 @@ void Brain::Run()
             }
             break;
         case TEST_SENSOR:
-            whiskers_reading = digitalRead(_pin_whiskers);
-            if (!whiskers_reading) {
-                _servo_signal_claw = 135;
-            } else {
-                _servo_signal_claw = 90;
-            }
+            whiskers_reading = !digitalRead(_pin_whiskers);
+            //if (!whiskers_reading) {
+                //_servo_signal_claw = 135;
+            //} else {
+                //_servo_signal_claw = 90;
+            //}
             Serial.print("Whiskers reading: ");
             Serial.println(whiskers_reading);
             break;
