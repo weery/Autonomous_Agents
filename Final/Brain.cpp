@@ -190,16 +190,16 @@ void Brain::Run()
             }
             break;
         case LEAVE_CAN:
-            _servo_signal_claw = MIDDLE_ANGLE;
+            _servo_signal_claw = MAX_ANGLE;
             if (movement_time > 10)
             {
-                _current_behaviour = LOCALIZE_CAN;
+                _current_behaviour = ROAM;
                 movement_time=0;
-                _current_movement = STATE_STOP;
+                _current_movement = STATE_BACKWARD;
             }
             else
             {
-                _current_movement = STATE_BACKWARD;
+                _current_movement = STATE_STOP;
                 movement_time++;
             }
 
@@ -292,27 +292,65 @@ void Brain::Run()
             movement_time++;
             break;
         case ROAM:
-            whiskers_reading = digitalRead(_pin_whiskers);
-            if (movement_time>20)
+            switch(_movement_action)
             {
-                movement_time =0;
-                _current_movement = STATE_STOP;
-                if (whiskers_reading)
-                    _current_behaviour = LOCALIZE_BEACON;
-                else
-                {
-                    _current_behaviour = LOCALIZE_CAN;
-                    _can_reading=255;
-                    _can_angle=MIDDLE_ANGLE;
-                    _servo_signal_tower = MIN_ANGLE;
-                }
-            }
-            else
-            {
-                // Random walk
-                movement_time++;
+                case ACTION_LOCKED:
+                    {
+                        movement_time++;
+                        if (movement_time == 5)
+                        {
+                            _movement_action = ACTION_UNDECIDED;
+                            movement_time = 0;
+                        }
+                        break;
+                    }
+                case ACTION_UNDECIDED:
+                    {
+                        Serial.println(ir_left_front_distance_reading);
+                        bool leftDetected = ir_left_front_distance_reading>0;
+                        bool rightDetected = ir_right_front_distance_reading>0;
+                        if(leftDetected && rightDetected) {
+                            int r = rand() % 1;
+                            if (r >0){
+                                _current_movement = STATE_ROTATE_LEFT;
+                                _movement_action = ACTION_LOCKED;
+                            }else{
+                                _current_movement = STATE_ROTATE_RIGHT;
+                                _movement_action = ACTION_LOCKED;
+                            }
+                        }else if(leftDetected){
+                            _current_movement = STATE_ROTATE_RIGHT;
+                        }else if(rightDetected){
+                            _current_movement = STATE_ROTATE_LEFT;
+                        }else{
+                            _current_movement = STATE_FORWARD;
+                        }
+                        break;
+                    }
             }
             break;
+        //case ROAM:
+            //whiskers_reading = digitalRead(_pin_whiskers);
+            //if (movement_time>20)
+            //{
+                //movement_time =0;
+                //_current_movement = STATE_STOP;
+                //if (whiskers_reading)
+                    //_current_behaviour = LOCALIZE_BEACON;
+                //else
+                //{
+                    //_current_behaviour = LOCALIZE_CAN;
+                    //_can_reading=255;
+                    //_can_angle=MIDDLE_ANGLE;
+                    //_servo_signal_tower = MIN_ANGLE;
+                //}
+            //}
+            //else
+            //{
+                //// Random walk
+                //movement_time++;
+            //}
+            //break;
         case TEST_SENSOR:
             whiskers_reading = digitalRead(_pin_whiskers);
             if (!whiskers_reading) {
@@ -582,12 +620,15 @@ bool Brain::ReadIrWithTransmitter(byte pin_reciever, byte pin_transmitter, unsig
     delay(1);
     _update_counter+=1;
     bool ir = digitalRead(pin_reciever);
+    delay(7);
+    _update_counter+=1;
     return ir;
 }
 
 byte Brain::ReadIrDistance(byte pin_reciever, byte pin_transmitter)
 {
     unsigned short frequencies[4] = {38000,40500,45000,52000};
+    //byte distances[4] = {26,21,15,10};
     byte distances[4] = {26,21,15,10};
     byte distance = 0;
     for(short i = 3; i >= 0; i--)
