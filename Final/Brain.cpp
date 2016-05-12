@@ -68,7 +68,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _servo_signal_tower = 90;
 
-    _servo_signal_claw = 90;
+    _servo_signal_claw = MIN_ANGLE;
 
     _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
     _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
@@ -121,7 +121,6 @@ void Brain::Run()
     byte ir_right_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_back,_pin_ir_transmitter_right_back);
 
     bool whiskers_reading;
-    Serial.println(_current_behaviour);
     // =digitalRead(_pin_whiskers);
 
     switch(_current_behaviour)
@@ -237,6 +236,9 @@ void Brain::Run()
             {
                 _can_angle = _servo_signal_tower;
                 _can_reading = ultrasonic_lower_reading;
+                Serial.print("Initial reading: ");
+                Serial.println(_can_reading);
+                Serial.println(_can_angle);
             }
             _servo_signal_tower+=5;
             movement_time++;
@@ -252,6 +254,8 @@ void Brain::Run()
                 _servo_signal_tower = MIN_ANGLE;
                 break;
             }
+            Serial.println(abs(ultrasonic_lower_reading - _can_reading));
+
             if (abs(ultrasonic_lower_reading - _can_reading)<3)
             {
                 movement_time =0;
@@ -259,11 +263,11 @@ void Brain::Run()
             }
             else if (_can_angle>MIDDLE_ANGLE )
             {
-                _current_movement = STATE_ROTATE_RIGHT_SLOWLY;
+                _current_movement = STATE_ROTATE_LEFT_SLOWLY;
             }
             else if (_can_angle< MIDDLE_ANGLE)
             {
-                _current_movement = STATE_ROTATE_LEFT_SLOWLY;
+                _current_movement = STATE_ROTATE_RIGHT_SLOWLY;
             }
             else
             {
@@ -473,12 +477,12 @@ void Brain::Run()
 switch(_current_movement)
 {
     case STATE_ROTATE_LEFT_SLOWLY:
-        _servo_signal_wheel_left = 1480;
-        _servo_signal_wheel_right = 1480;
+        _servo_signal_wheel_left = 1490;
+        _servo_signal_wheel_right = 1490;
         break;
     case STATE_ROTATE_RIGHT_SLOWLY:
-        _servo_signal_wheel_left = 1520;
-        _servo_signal_wheel_right = 1520;
+        _servo_signal_wheel_left = 1510;
+        _servo_signal_wheel_right = 1510;
         break;
     case STATE_ROTATE_LEFT:
         _servo_signal_wheel_left = 1450;

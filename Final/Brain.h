@@ -136,7 +136,7 @@ class Brain
         const byte UPDATE_DELAY = 100;
         const byte BLACK_PAPER_LIMIT = 10;
 
-        byte _can_reading;
+        byte _can_reading = 255;
         byte _can_angle;
 
         byte movement_time = 0;
