@@ -13,7 +13,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
     _pin_servo_wheel_left= pin_servo_wheel_left;
     _pin_servo_wheel_right= pin_servo_wheel_right,
 
-    _pin_servo_tower= pin_servo_tower;
+        _pin_servo_tower= pin_servo_tower;
     _pin_servo_claw= pin_servo_claw;
 
     _pin_ultrasonic_lower_echo= pin_ultrasonic_lower_echo;
@@ -26,10 +26,10 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _pin_ir_reciever_left_back= pin_ir_reciever_left_back;
     _pin_ir_reciever_right_back= pin_ir_reciever_right_back;
-    
+
     _pin_ir_transmitter_left_front = pin_ir_transmitter_left_front;
     _pin_ir_transmitter_right_front = pin_ir_transmitter_right_front;
-        
+
     _pin_ir_transmitter_left_back = pin_ir_transmitter_left_back;
     _pin_ir_transmitter_right_back = pin_ir_transmitter_right_back;
 
@@ -85,7 +85,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = LOCALIZE_BEACON;
+    _current_behaviour = ROAM;
 
     delay(100);
 }
@@ -109,7 +109,7 @@ void Brain::Run()
     //= Brain::ReadIr(_pin_ir_reciever_right_front);
 
     bool ir_left_back_reading;
-        //= Brain::ReadIr(_pin_ir_reciever_left_back);
+    //= Brain::ReadIr(_pin_ir_reciever_left_back);
     bool ir_right_back_reading;
     //= Brain::ReadIr(_pin_ir_reciever_right_back);
 
@@ -167,7 +167,7 @@ void Brain::Run()
 
                 movement_time++;
             }
-        break;
+            break;
         case GO_TO_BEACON:
             phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
 
@@ -188,7 +188,7 @@ void Brain::Run()
                 _current_movement = STATE_FORWARD;
                 movement_time++;
             }
-        break;
+            break;
         case LEAVE_CAN:
             _servo_signal_claw = MIDDLE_ANGLE;
             if (movement_time > 10)
@@ -203,7 +203,7 @@ void Brain::Run()
                 movement_time++;
             }
 
-        break;
+            break;
         case LOCALIZE_CAN:
             _current_movement = STATE_STOP;
             if (movement_time >= 19)
@@ -218,16 +218,16 @@ void Brain::Run()
                 {
                     _current_behaviour = ROAM;
                     int random_heading = rand() % 5;
-                        if (random_heading == 0)
-                            _current_movement = STATE_FORWARD;
-                else if (random_heading == 1)
-                    _current_movement = STATE_ROTATE_LEFT;
-                else if (random_heading == 2)
-                    _current_movement = STATE_ROTATE_RIGHT;
-                else if (random_heading == 3)
-                    _current_movement = STATE_FORWARD_LEFT;
-                else if (random_heading == 4)
-                    _current_movement = STATE_FORWARD_RIGHT;
+                    if (random_heading == 0)
+                        _current_movement = STATE_FORWARD;
+                    else if (random_heading == 1)
+                        _current_movement = STATE_ROTATE_LEFT;
+                    else if (random_heading == 2)
+                        _current_movement = STATE_ROTATE_RIGHT;
+                    else if (random_heading == 3)
+                        _current_movement = STATE_FORWARD_LEFT;
+                    else if (random_heading == 4)
+                        _current_movement = STATE_FORWARD_RIGHT;
                 }
             }
             ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
@@ -240,7 +240,7 @@ void Brain::Run()
             }
             _servo_signal_tower+=5;
             movement_time++;
-        break;
+            break;
         case HEAD_TO_CAN:
             ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
             if (movement_time > 20)
@@ -266,10 +266,10 @@ void Brain::Run()
             }
             else
             {
-                 movement_time =0;
+                movement_time =0;
                 _current_behaviour = GO_TO_CAN;
             }
-        break;
+            break;
         case GO_TO_CAN:
             _current_movement=STATE_FORWARD;
             whiskers_reading = digitalRead(_pin_whiskers);
@@ -280,7 +280,7 @@ void Brain::Run()
                 _current_movement=STATE_STOP;
             }
 
-        break;
+            break;
         case CATCH_CAN:
             _current_movement=STATE_STOP;
             _servo_signal_claw = MIN_ANGLE;
@@ -290,7 +290,7 @@ void Brain::Run()
                 movement_time =0;
             }
             movement_time++;
-        break;
+            break;
         case ROAM:
             whiskers_reading = digitalRead(_pin_whiskers);
             if (movement_time>20)
@@ -326,191 +326,191 @@ void Brain::Run()
     }
 
     /* _current_state
-    switch(_current_state)
+       switch(_current_state)
+       {
+       case STATE_TEST_SENSOR:
+       _pin_servo_claw=45;
+       _servo_claw.write(_pin_servo_claw);
+       delay(1000);
+       _update_counter+=1000;
+       _pin_servo_claw=135;
+       _servo_claw.write(_pin_servo_claw);
+       Serial.println(digitalRead(_pin_whiskers));
+       break;
+       case STATE_FIND_SAFEZONE:
+       {
+       if (phototransistor_reading < BLACK_PAPER_LIMIT)
+       {
+       _current_movement = STATE_STOP;
+       break;
+       }
+       }
+       case STATE_ROAM:
+       {
+       switch(_movement_action)
+       {
+       case ACTION_LOCKED:
+       {
+       movement_time++;
+       if (movement_time == 5)
+       {
+       _movement_action = ACTION_UNDECIDED;
+       movement_time = 0;
+       }
+       break;
+       }
+       case ACTION_UNDECIDED:
+       {
+
+       bool leftDetected = Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter)>0;
+       bool rightDetected = Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter)>0;
+       if(leftDetected && rightDetected) {
+       int r = rand() % 1;
+       if (r >0){
+       _current_movement = STATE_ROTATE_LEFT;
+       _movement_action = ACTION_LOCKED;
+       }else{
+       _current_movement = STATE_ROTATE_RIGHT;
+       _movement_action = ACTION_LOCKED;
+       }
+       }else if(leftDetected){
+       _current_movement = STATE_ROTATE_RIGHT;
+       }else if(rightDetected){
+       _current_movement = STATE_ROTATE_LEFT;
+       }else{
+       _current_movement = STATE_FORWARD;
+       }
+       break;
+       }
+       }
+       break;
+       }
+       case STATE_FIND_CAN:
+       {
+       _current_movement = STATE_STOP;
+       const byte MAX_ANGLE = 135;
+       const byte MIN_ANGLE = 45;
+       const byte INCREMENT = 10;
+       const byte N_INCREMENTS=(MAX_ANGLE-MIN_ANGLE)/INCREMENT;
+       const byte ULTRASONIC_DIFF_MARGIN = 6;
+
+       byte min_reading = 255;
+       byte min_reading_angle=90;
+    _servo_tower.write(MIN_ANGLE);
+    delay(1000);
+    _update_counter+=1000;
+    for (byte i = 0; i<N_INCREMENTS;i++ )
     {
-        case STATE_TEST_SENSOR:
-                    _pin_servo_claw=45;
-                    _servo_claw.write(_pin_servo_claw);
-                    delay(1000);
-                    _update_counter+=1000;
-                    _pin_servo_claw=135;
-                    _servo_claw.write(_pin_servo_claw);
-                    Serial.println(digitalRead(_pin_whiskers));
-            break;
-        case STATE_FIND_SAFEZONE:
-            {
-                if (phototransistor_reading < BLACK_PAPER_LIMIT)
-                {
-                    _current_movement = STATE_STOP;
-                    break;
-                }
-            }
-        case STATE_ROAM:
-            {
-                switch(_movement_action)
-                {
-                    case ACTION_LOCKED:
-                        {
-                            movement_time++;
-                            if (movement_time == 5)
-                            {
-                                _movement_action = ACTION_UNDECIDED;
-                                movement_time = 0;
-                            }
-                            break;
-                        }
-                    case ACTION_UNDECIDED:
-                        {
+        byte angle = MIN_ANGLE + i*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
+        _servo_tower.write(angle);
+        delay(30);
+        _update_counter+=30;
+        ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
+        ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
-                            bool leftDetected = Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter)>0;
-                            bool rightDetected = Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter)>0;
-                            if(leftDetected && rightDetected) {
-                                int r = rand() % 1;
-                                if (r >0){
-                                    _current_movement = STATE_ROTATE_LEFT;
-                                    _movement_action = ACTION_LOCKED;
-                                }else{
-                                    _current_movement = STATE_ROTATE_RIGHT;
-                                    _movement_action = ACTION_LOCKED;
-                                }
-                            }else if(leftDetected){
-                                _current_movement = STATE_ROTATE_RIGHT;
-                            }else if(rightDetected){
-                                _current_movement = STATE_ROTATE_LEFT;
-                            }else{
-                                _current_movement = STATE_FORWARD;
-                            }
-                            break;
-                        }
-                }
-                break;
-            }
-        case STATE_FIND_CAN:
-            {
-                _current_movement = STATE_STOP;
-                const byte MAX_ANGLE = 135;
-                const byte MIN_ANGLE = 45;
-                const byte INCREMENT = 10;
-                const byte N_INCREMENTS=(MAX_ANGLE-MIN_ANGLE)/INCREMENT;
-                const byte ULTRASONIC_DIFF_MARGIN = 6;
+        if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>ULTRASONIC_DIFF_MARGIN )
+        {
+            min_reading = ultrasonic_lower_reading;
+            min_reading_angle= angle;
+            Serial.println(min_reading_angle);
 
-                byte min_reading = 255;
-                byte min_reading_angle=90;
-                _servo_tower.write(MIN_ANGLE);
-                delay(1000);
-                    _update_counter+=1000;
-                for (byte i = 0; i<N_INCREMENTS;i++ )
-                {
-                    byte angle = MIN_ANGLE + i*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
-                    _servo_tower.write(angle);
-                    delay(30);
-                    _update_counter+=30;
-                    ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
-                    ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
-
-                    if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>ULTRASONIC_DIFF_MARGIN )
-                    {
-                        min_reading = ultrasonic_lower_reading;
-                        min_reading_angle= angle;
-                        Serial.println(min_reading_angle);
-
-                    }
-                }
-                for (byte i = N_INCREMENTS; i>0;i--)
-                {
-                    byte angle = MIN_ANGLE + (i-1)*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
-                    _servo_tower.write(angle);
-                    delay(30);
-                    _update_counter+=30;
-                    ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
-                    ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
-
-                    if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>ULTRASONIC_DIFF_MARGIN)
-                    {
-                        min_reading = ultrasonic_lower_reading;
-                        min_reading_angle= angle;
-                        Serial.println(min_reading_angle);
-
-                    }
-                }
-
-                _servo_tower.write(min_reading_angle);
-                Serial.println(min_reading_angle);
-                Serial.println(min_reading);
-                delay(1000);
-                    _update_counter+=1000;
-                break;
-            }
+        }
     }
-    */
-
-    // ADD COLLISION AVOIDANCE
-   switch(_current_movement)
+    for (byte i = N_INCREMENTS; i>0;i--)
     {
-        case STATE_ROTATE_LEFT_SLOWLY:
-            _servo_signal_wheel_left = 1490;
-            _servo_signal_wheel_right = 1490;
-            break;
-        case STATE_ROTATE_RIGHT_SLOWLY:
-            _servo_signal_wheel_left = 1510;
-            _servo_signal_wheel_right = 1510;
-        case STATE_ROTATE_LEFT:
-            _servo_signal_wheel_left = 1450;
-            _servo_signal_wheel_right = 1450;
-            break;
-        case STATE_ROTATE_RIGHT:
-            _servo_signal_wheel_left = 1550;
-            _servo_signal_wheel_right = 1550;
-            break;
-        case STATE_FORWARD:
-            _servo_signal_wheel_left = 1550;
-            _servo_signal_wheel_right = 1450;
-            break;
-        case STATE_BACKWARD:
-            _servo_signal_wheel_left = 1450;
-            _servo_signal_wheel_right = 1550;
-            break;
-        case STATE_STOP:
-            _servo_signal_wheel_left = 1500;
-            _servo_signal_wheel_right = 1500;
-            break;
-        case STATE_BACKWARD_LEFT:
-            _servo_signal_wheel_left = 1450;
-            _servo_signal_wheel_right = 1600;
-            break;
-        case STATE_BACKWARD_RIGHT:
-            _servo_signal_wheel_left = 1400;
-            _servo_signal_wheel_right = 1550;
-            break;
+        byte angle = MIN_ANGLE + (i-1)*(MAX_ANGLE-MIN_ANGLE)/(N_INCREMENTS-1);
+        _servo_tower.write(angle);
+        delay(30);
+        _update_counter+=30;
+        ultrasonic_lower_reading = Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
+        ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
+
+        if (ultrasonic_lower_reading<min_reading && abs(ultrasonic_upper_reading-ultrasonic_lower_reading)>ULTRASONIC_DIFF_MARGIN)
+        {
+            min_reading = ultrasonic_lower_reading;
+            min_reading_angle= angle;
+            Serial.println(min_reading_angle);
+
+        }
     }
 
-    //Serial.print("Current Behaviour: ");
-    //Serial.println(_current_behaviour);
+    _servo_tower.write(min_reading_angle);
+    Serial.println(min_reading_angle);
+    Serial.println(min_reading);
+    delay(1000);
+    _update_counter+=1000;
+    break;
+}
+}
+*/
 
-    //Serial.print("Current Movement: ");
-    //Serial.println(_current_movement);
+// ADD COLLISION AVOIDANCE
+switch(_current_movement)
+{
+    case STATE_ROTATE_LEFT_SLOWLY:
+        _servo_signal_wheel_left = 1490;
+        _servo_signal_wheel_right = 1490;
+        break;
+    case STATE_ROTATE_RIGHT_SLOWLY:
+        _servo_signal_wheel_left = 1510;
+        _servo_signal_wheel_right = 1510;
+    case STATE_ROTATE_LEFT:
+        _servo_signal_wheel_left = 1450;
+        _servo_signal_wheel_right = 1450;
+        break;
+    case STATE_ROTATE_RIGHT:
+        _servo_signal_wheel_left = 1550;
+        _servo_signal_wheel_right = 1550;
+        break;
+    case STATE_FORWARD:
+        _servo_signal_wheel_left = 1550;
+        _servo_signal_wheel_right = 1450;
+        break;
+    case STATE_BACKWARD:
+        _servo_signal_wheel_left = 1450;
+        _servo_signal_wheel_right = 1550;
+        break;
+    case STATE_STOP:
+        _servo_signal_wheel_left = 1500;
+        _servo_signal_wheel_right = 1500;
+        break;
+    case STATE_BACKWARD_LEFT:
+        _servo_signal_wheel_left = 1450;
+        _servo_signal_wheel_right = 1600;
+        break;
+    case STATE_BACKWARD_RIGHT:
+        _servo_signal_wheel_left = 1400;
+        _servo_signal_wheel_right = 1550;
+        break;
+}
 
-   _servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
-    _servo_signal_wheel_right = Brain::Clamp(_servo_signal_wheel_right,MAX_SIGNAL,MIN_SIGNAL);
+//Serial.print("Current Behaviour: ");
+//Serial.println(_current_behaviour);
 
-    _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
-    _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
+//Serial.print("Current Movement: ");
+//Serial.println(_current_movement);
 
-    //Serial.print("Before clamp");
-    //Serial.println(_servo_signal_claw);
-    _servo_signal_claw = Brain::Clamp(_servo_signal_claw,MAX_ANGLE,MIN_ANGLE);
-    //Serial.print("After Clamp");
-    //Serial.println(_servo_signal_claw);
-    
-    _servo_claw.write(_servo_signal_claw);
+_servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
+_servo_signal_wheel_right = Brain::Clamp(_servo_signal_wheel_right,MAX_SIGNAL,MIN_SIGNAL);
 
-    _servo_signal_tower = Brain::Clamp(_servo_signal_tower,MAX_ANGLE,MIN_ANGLE);
+_servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
+_servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
 
-    _servo_tower.write(_servo_signal_tower);
+//Serial.print("Before clamp");
+//Serial.println(_servo_signal_claw);
+_servo_signal_claw = Brain::Clamp(_servo_signal_claw,MAX_ANGLE,MIN_ANGLE);
+//Serial.print("After Clamp");
+//Serial.println(_servo_signal_claw);
+
+_servo_claw.write(_servo_signal_claw);
+
+_servo_signal_tower = Brain::Clamp(_servo_signal_tower,MAX_ANGLE,MIN_ANGLE);
+
+_servo_tower.write(_servo_signal_tower);
 
 
-    byte remaining_delay=UPDATE_DELAY-_update_counter;
-    delay(remaining_delay);
+byte remaining_delay=UPDATE_DELAY-_update_counter;
+delay(remaining_delay);
 }
 
 void Brain::LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_distance,
