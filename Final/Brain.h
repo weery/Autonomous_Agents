@@ -95,13 +95,14 @@ class Brain
         enum Behaviours{
             ROAM = 0, // Same as default
             LOCALIZE_BEACON = 1, // Face beacon, else roam
-            GO_TO_BEACON = 2, // Go Towards the found beacon
-            LEAVE_CAN = 3, // When at safezone/beacon, release can and back
-            LOCALIZE_CAN = 4, // FInd can + reading
-            HEAD_TO_CAN = 5,
-            GO_TO_CAN = 6, // Go Towards found can
-            CATCH_CAN = 7, // When at can, lower arm
-            TEST_SENSOR = 8,
+            HEAD_TO_BEACON = 2,
+            GO_TO_BEACON = 3, // Go Towards the found beacon
+            LEAVE_CAN = 4, // When at safezone/beacon, release can and back
+            LOCALIZE_CAN = 5, // FInd can + reading
+            HEAD_TO_CAN = 6,
+            GO_TO_CAN = 7, // Go Towards found can
+            CATCH_CAN = 8, // When at can, lower arm
+            TEST_SENSOR = 9,
         };
 
         BrainStates _current_state;

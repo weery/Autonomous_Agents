@@ -155,9 +155,21 @@ void Brain::Run()
                     _current_movement = STATE_ROTATE_LEFT;
                 else if (ir_right_front_reading)
                     _current_movement = STATE_ROTATE_RIGHT;
-
+                else
+                {
+                    movement_time++;
+                    break;
+                }
+                _current_behaviour = HEAD_TO_BEACON;
                 movement_time++;
             }
+            break;
+        case HEAD_TO_BEACON:
+            if (movement_time % 20 == 0)
+            {
+                _current_behaviour = LOCALIZE_BEACON;
+            }
+            movement_time++;
             break;
         case GO_TO_BEACON:
             phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
