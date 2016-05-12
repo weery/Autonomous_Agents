@@ -133,21 +133,12 @@ void Brain::Run()
             ir_left_back_reading = Brain::ReadIr(_pin_ir_reciever_left_back);
             ir_right_back_reading = Brain::ReadIr(_pin_ir_reciever_right_back);
 
+            _current_movement = STATE_STOP;
+
             if (movement_time > 100)
             {
                 movement_time = 0;
                 _current_behaviour = ROAM;
-                int random_heading = rand() % 5;
-                if (random_heading == 0)
-                    _current_movement = STATE_FORWARD;
-                else if (random_heading == 1)
-                    _current_movement = STATE_ROTATE_LEFT;
-                else if (random_heading == 2)
-                    _current_movement = STATE_ROTATE_RIGHT;
-                else if (random_heading == 3)
-                    _current_movement = STATE_FORWARD_LEFT;
-                else if (random_heading == 4)
-                    _current_movement = STATE_FORWARD_RIGHT;
             }
             else
             {
@@ -214,20 +205,9 @@ void Brain::Run()
                 {
                     _current_behaviour = HEAD_TO_CAN;
                 }
-                //else {
-                    //_current_behaviour = ROAM;
-                    //int random_heading = rand() % 5;
-                    //if (random_heading == 0)
-                        //_current_movement = STATE_FORWARD;
-                    //else if (random_heading == 1)
-                        //_current_movement = STATE_ROTATE_LEFT;
-                    //else if (random_heading == 2)
-                        //_current_movement = STATE_ROTATE_RIGHT;
-                    //else if (random_heading == 3)
-                        //_current_movement = STATE_FORWARD_LEFT;
-                    //else if (random_heading == 4)
-                        //_current_movement = STATE_FORWARD_RIGHT;
-                //}
+                else {
+                    _current_behaviour = ROAM;
+                }
             }
             ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
             ultrasonic_upper_reading= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
@@ -277,6 +257,15 @@ void Brain::Run()
             movement_time++;
             break;
         case GO_TO_CAN:
+            if (movement_time > 20) {
+                movement_time = 0;
+                _can_reading = 255;
+                _can_angle = MIN_ANGLE;
+                _servo_signal_tower = MIN_ANGLE;
+                _current_behaviour = LOCALIZE_CAN;
+                break;
+            }
+            movement_time++;
             _current_movement=STATE_FORWARD;
             whiskers_reading = !digitalRead(_pin_whiskers);
             if (whiskers_reading)
@@ -294,11 +283,12 @@ void Brain::Run()
             {
                 _current_behaviour = LOCALIZE_BEACON;
                 movement_time =0;
+                has_can = true;
             }
             movement_time++;
             break;
         case ROAM:
-            if (movement_time > 20) {
+            if (movement_time < 20) {
                 switch(_movement_action) {
                     case ACTION_LOCKED:
                         movement_time++;
@@ -326,6 +316,12 @@ void Brain::Run()
                             _current_movement = STATE_ROTATE_LEFT;
                         }else{
                             _current_movement = STATE_FORWARD;
+                            int r = rand() % 4;
+                            if (r==2) {
+                            _current_movement = STATE_FORWARD_LEFT;
+                            } else if (r==3) {
+                            _current_movement = STATE_FORWARD_RIGHT;
+                            }
                         }
                         break;
                 }
