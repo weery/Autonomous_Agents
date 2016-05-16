@@ -113,6 +113,17 @@ class Brain
 
         Behaviours _current_behaviour;
 
+        // Behaviours
+        void LocalizeBeacon();
+        void HeadToBeacon();
+        void GoToBeacon();
+        void LeaveCan();
+        void LocalizeCan();
+        void HeadToCan();
+        void GoToCan();
+        void CatchCan();
+        void Roam();
+
         // Read sensors
         int ReadUltrasonic2Pin(byte pin_echo, byte pin_trig);
 
