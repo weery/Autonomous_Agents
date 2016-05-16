@@ -13,7 +13,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
     _pin_servo_wheel_left= pin_servo_wheel_left;
     _pin_servo_wheel_right= pin_servo_wheel_right,
 
-        _pin_servo_tower= pin_servo_tower;
+    _pin_servo_tower= pin_servo_tower;
     _pin_servo_claw= pin_servo_claw;
 
     _pin_ultrasonic_lower_echo= pin_ultrasonic_lower_echo;
@@ -120,7 +120,9 @@ void Brain::Run()
 
     bool whiskers_reading;
     // =digitalRead(_pin_whiskers);
-
+    //Serial.print("Current Behaviour: ");
+    //Serial.println(_current_behaviour);
+    
     switch(_current_behaviour)
     {
         case LOCALIZE_BEACON:
@@ -240,9 +242,22 @@ void Brain::LocalizeBeacon()
 
     bool ir_left_back_reading = Brain::ReadIr(_pin_ir_reciever_left_back);
     bool ir_right_back_reading = Brain::ReadIr(_pin_ir_reciever_right_back);
+    /*
+    Serial.print("Left Front: ");
+    Serial.println(ir_left_front_reading);
+    
+    Serial.print("Right Front: ");
+    Serial.println(ir_right_front_reading);
 
+    Serial.print("Left Back: ");
+    Serial.println(ir_left_back_reading);
+    
+    Serial.print("Right Back: ");
+    Serial.println(ir_right_back_reading);
+    */
+    
     _current_movement = STATE_STOP;
-
+    
     if (movement_time > 100)
     {
         movement_time = 0;
@@ -250,19 +265,28 @@ void Brain::LocalizeBeacon()
     }
     else
     {
-        if (ir_left_back_reading)
+        if (ir_left_back_reading){
+          Serial.println("I see the beacon in left back.");
             _current_movement = STATE_ROTATE_LEFT;
-        else if (ir_right_back_reading)
+        }
+        else if (ir_right_back_reading){
             _current_movement = STATE_ROTATE_RIGHT;
+          Serial.println("I see the beacon in right back.");
+        }
         else if (ir_right_front_reading && ir_left_front_reading)
         {
+          Serial.println("I see the beacon in Front of me.");
             _current_behaviour = GO_TO_BEACON;
             movement_time=0;
         }
-        else if (ir_left_front_reading)
+        else if (ir_left_front_reading){
             _current_movement = STATE_ROTATE_LEFT;
-        else if (ir_right_front_reading)
+          Serial.println("I see the beacon in left front.");
+        }
+        else if (ir_right_front_reading){
             _current_movement = STATE_ROTATE_RIGHT;
+          Serial.println("I see the beacon in right front.");
+        }
         else
         {
             movement_time++;
@@ -569,7 +593,7 @@ byte Brain::ReadIrDistance(byte pin_reciever, byte pin_transmitter)
 bool Brain::ReadIr(byte pin_reciever)
 {
     bool ir = digitalRead(pin_reciever);
-    return ir;
+    return !ir;
 }
 
 
