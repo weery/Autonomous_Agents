@@ -168,6 +168,11 @@ class Brain
         const unsigned short MIN_SIGNAL = 1400;
         // Find can constants
         const byte ULTRASONIC_DIFF_MARGIN = 6;
+        
+        const byte MIN_PINGSENSOR_READING = 10;
+        
+        bool AvoidingCollision= false;
+        byte CollisionTimer = 0;
 };
 
 

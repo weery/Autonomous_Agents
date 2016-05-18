@@ -85,7 +85,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = LOCALIZE_BEACON;
+    _current_behaviour = ROAM;
 
     delay(100);
 }
@@ -122,46 +122,58 @@ void Brain::Run()
     // =digitalRead(_pin_whiskers);
     //Serial.print("Current Behaviour: ");
     //Serial.println(_current_behaviour);
-
-    switch(_current_behaviour)
+    if (AvoidingCollision)
     {
-        case LOCALIZE_BEACON:
-            Brain::LocalizeBeacon();
-            break;
-        case HEAD_TO_BEACON:
-            Brain::HeadToBeacon();
-            break;
-        case GO_TO_BEACON:
-            Brain::GoToBeacon();
-            break;
-        case LEAVE_CAN:
-            Brain::LeaveCan();
-            break;
-        case LOCALIZE_CAN:
-            Brain::LocalizeCan();
-            break;
-        case HEAD_TO_CAN:
-            Brain::HeadToCan();
-            break;
-        case GO_TO_CAN:
-            Brain::GoToCan();
-            break;
-        case CATCH_CAN:
-            Brain::CatchCan();
-            break;
-        case ROAM:
-            Brain::Roam();
-            break;
-        case TEST_SENSOR:
-            whiskers_reading = !digitalRead(_pin_whiskers);
-            //if (!whiskers_reading) {
-                //_servo_signal_claw = 135;
-            //} else {
-                //_servo_signal_claw = 90;
-            //}
-            Serial.print("Whiskers reading: ");
-            Serial.println(whiskers_reading);
-            break;
+        if (CollisionTimer>0)
+        {
+            // DO AVOIDING
+        }
+        else{
+            AvoidingCollision = false;
+        }
+        CollisionTimer--;
+    }
+    else{
+        switch(_current_behaviour)
+        {
+            case LOCALIZE_BEACON:
+                Brain::LocalizeBeacon();
+                break;
+            case HEAD_TO_BEACON:
+                Brain::HeadToBeacon();
+                break;
+            case GO_TO_BEACON:
+                Brain::GoToBeacon();
+                break;
+            case LEAVE_CAN:
+                Brain::LeaveCan();
+                break;
+            case LOCALIZE_CAN:
+                Brain::LocalizeCan();
+                break;
+            case HEAD_TO_CAN:
+                Brain::HeadToCan();
+                break;
+            case GO_TO_CAN:
+                Brain::GoToCan();
+                break;
+            case CATCH_CAN:
+                Brain::CatchCan();
+                break;
+            case ROAM:
+                Brain::Roam();
+                break;
+            case TEST_SENSOR:
+                whiskers_reading = !digitalRead(_pin_whiskers);
+                //if (!whiskers_reading) {
+                    //_servo_signal_claw = 135;
+                //} else {
+                    //_servo_signal_claw = 90;
+                //}
+                Serial.print("Whiskers reading: ");
+                Serial.println(whiskers_reading);
+                break;
+        }
     }
 
     Brain::AvoidCollision(COLLISION_CONSTANT);
@@ -446,6 +458,8 @@ void Brain::CatchCan()
 
 void Brain::Roam()
 {
+    // SÅ vi inte går ifrån roam
+    movement_time=0;
     if (movement_time < 20) {
         switch(_movement_action) {
             case ACTION_LOCKED:
@@ -602,15 +616,22 @@ byte Brain::ReadPhototransistor(byte pin_phototransistor)
     return analogRead(pin_phototransistor);
 }
 
-void Bran::AvoidCollision(byte distance)
+void Brain::AvoidCollision(byte distance)
 {
     byte ir_left_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter_left_front);
     byte ir_right_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter_right_front);
     bool leftDetected = (ir_left_front_distance_reading <= distance) && (ir_left_front_distance_reading > 0);
     bool rightDetected = (ir_right_front_distance_reading <= distance) && (ir_right_front_distance_reading > 0);
+    int ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
+    if (ultrasonic_upper_reading < MIN_PINGSENSOR_READING)
+    {
+        _current_movement = STATE_BACKWARD_LEFT;
+        return;
+    }
     if(leftDetected){
         _current_movement = STATE_ROTATE_RIGHT;
     }else if(rightDetected){
         _current_movement = STATE_ROTATE_LEFT;
     }
+
 }
