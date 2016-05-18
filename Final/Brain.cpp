@@ -178,69 +178,7 @@ void Brain::Run()
 
     Brain::AvoidCollision(COLLISION_CONSTANT);
     // ADD COLLISION AVOIDANCE
-    switch(_current_movement)
-    {
-    case STATE_ROTATE_LEFT_SLOWLY:
-        _servo_signal_wheel_left = 1490;
-        _servo_signal_wheel_right = 1490;
-        break;
-    case STATE_ROTATE_RIGHT_SLOWLY:
-        _servo_signal_wheel_left = 1510;
-        _servo_signal_wheel_right = 1510;
-        break;
-    case STATE_ROTATE_LEFT:
-        _servo_signal_wheel_left = 1450;
-        _servo_signal_wheel_right = 1450;
-        break;
-    case STATE_ROTATE_RIGHT:
-        _servo_signal_wheel_left = 1550;
-        _servo_signal_wheel_right = 1550;
-        break;
-    case STATE_FORWARD:
-        _servo_signal_wheel_left = 1550;
-        _servo_signal_wheel_right = 1450;
-        break;
-    case STATE_BACKWARD:
-        _servo_signal_wheel_left = 1450;
-        _servo_signal_wheel_right = 1550;
-        break;
-    case STATE_STOP:
-        _servo_signal_wheel_left = 1500;
-        _servo_signal_wheel_right = 1500;
-        break;
-    case STATE_BACKWARD_LEFT:
-        _servo_signal_wheel_left = 1450;
-        _servo_signal_wheel_right = 1600;
-        break;
-    case STATE_BACKWARD_RIGHT:
-        _servo_signal_wheel_left = 1400;
-        _servo_signal_wheel_right = 1550;
-        break;
-    }
-
-    //Serial.print("Current Behaviour: ");
-    //Serial.println(_current_behaviour);
-
-    //Serial.print("Current Movement: ");
-    //Serial.println(_current_movement);
-
-    _servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
-    _servo_signal_wheel_right = Brain::Clamp(_servo_signal_wheel_right,MAX_SIGNAL,MIN_SIGNAL);
-
-    _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
-    _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
-
-    //Serial.print("Before clamp");
-    //Serial.println(_servo_signal_claw);
-    _servo_signal_claw = Brain::Clamp(_servo_signal_claw,MAX_ANGLE,MIN_ANGLE);
-    //Serial.print("After Clamp");
-    //Serial.println(_servo_signal_claw);
-
-    _servo_claw.write(_servo_signal_claw);
-
-    _servo_signal_tower = Brain::Clamp(_servo_signal_tower,MAX_ANGLE,MIN_ANGLE);
-
-    _servo_tower.write(_servo_signal_tower);
+    
 
 
     byte remaining_delay=UPDATE_DELAY-_update_counter;
@@ -254,22 +192,13 @@ void Brain::LocalizeBeacon()
 
     bool ir_left_back_reading = Brain::ReadIr(_pin_ir_reciever_left_back);
     bool ir_right_back_reading = Brain::ReadIr(_pin_ir_reciever_right_back);
-    /*
-    Serial.print("Left Front: ");
-    Serial.println(ir_left_front_reading);
-
-    Serial.print("Right Front: ");
-    Serial.println(ir_right_front_reading);
-
-    Serial.print("Left Back: ");
-    Serial.println(ir_left_back_reading);
-
-    Serial.print("Right Back: ");
-    Serial.println(ir_right_back_reading);
-    */
-
-    _current_movement = STATE_STOP;
-
+    
+    if (_current_movement != STATE_STOP)
+    {
+        _current_movement = STATE_STOP;
+        Brain::ChangeWheelServos();
+    }
+    
     if (movement_time > 100)
     {
         movement_time = 0;
@@ -278,26 +207,37 @@ void Brain::LocalizeBeacon()
     else
     {
         if (ir_left_back_reading){
-          Serial.println("I see the beacon in left back.");
-            _current_movement = STATE_ROTATE_LEFT;
+            if (_current_movement != STATE_ROTATE_LEFT)
+            {
+                _current_movement = STATE_ROTATE_LEFT;
+                Brain::ChangeWheelServos();
+            }
         }
         else if (ir_right_back_reading){
-            _current_movement = STATE_ROTATE_RIGHT;
-          Serial.println("I see the beacon in right back.");
+            if (_current_movement != STATE_ROTATE_RIGHT)
+            {
+                _current_movement = STATE_ROTATE_RIGHT;
+                Brain::ChangeWheelServos();
+            }
         }
         else if (ir_right_front_reading && ir_left_front_reading)
         {
-          Serial.println("I see the beacon in Front of me.");
             _current_behaviour = GO_TO_BEACON;
             movement_time=0;
         }
         else if (ir_left_front_reading){
-            _current_movement = STATE_ROTATE_LEFT;
-          Serial.println("I see the beacon in left front.");
+            if (_current_movement != STATE_ROTATE_LEFT)
+            {
+                _current_movement = STATE_ROTATE_LEFT;
+                Brain::ChangeWheelServos();
+            }
         }
         else if (ir_right_front_reading){
-            _current_movement = STATE_ROTATE_RIGHT;
-          Serial.println("I see the beacon in right front.");
+            if (_current_movement != STATE_ROTATE_RIGHT)
+            {
+                _current_movement = STATE_ROTATE_RIGHT;
+                Brain::ChangeWheelServos();
+            }
         }
         else
         {
@@ -332,11 +272,19 @@ void Brain::GoToBeacon()
     {
         _current_behaviour = LOCALIZE_BEACON;
         movement_time = 0;
-        _current_movement = STATE_STOP;
+        if (_current_movement != STATE_STOP)
+            {
+                _current_movement = STATE_STOP;
+                Brain::ChangeWheelServos();
+            }
     }
     else
     {
-        _current_movement = STATE_FORWARD;
+        if (_current_movement != STATE_FORWARD)
+            {
+                _current_movement = STATE_FORWARD;
+                Brain::ChangeWheelServos();
+            }
         movement_time++;
     }
 }
@@ -344,26 +292,40 @@ void Brain::GoToBeacon()
 void Brain::LeaveCan()
 {
     _servo_signal_claw = MAX_ANGLE;
+    Brain::ChangeClawServo();
     if (movement_time > 10)
     {
         _current_behaviour = ROAM;
         movement_time=0;
-        _current_movement = STATE_BACKWARD;
+           if (_current_movement != STATE_BACKWARD)
+            {
+                _current_movement = STATE_BACKWARD;
+                Brain::ChangeWheelServos();
+            }
     }
     else
     {
-        _current_movement = STATE_STOP;
+        if (_current_movement != STATE_STOP)
+            {
+                _current_movement = STATE_STOP;
+                Brain::ChangeWheelServos();
+            }
         movement_time++;
     }
 }
 
 void Brain::LocalizeCan()
 {
-    _current_movement = STATE_STOP;
+    if (_current_movement != STATE_STOP)
+    {
+        _current_movement = STATE_STOP;
+        Brain::ChangeWheelServos();
+    }
     if (movement_time >= 19)
     {
         movement_time =0;
         _servo_signal_tower = MIDDLE_ANGLE;
+        Brain::ChangeTowerServo();
         if (_can_reading < 255)
         {
             _current_behaviour = HEAD_TO_CAN;
@@ -384,6 +346,7 @@ void Brain::LocalizeCan()
         Serial.println(_can_angle);
     }
     _servo_signal_tower+=5;
+    Brain::ChangeTowerServo();
     movement_time++;
 }
 
@@ -408,11 +371,20 @@ void Brain::HeadToCan()
     }
     else if (_can_angle>MIDDLE_ANGLE )
     {
+        if (_current_movement != STATE_ROTATE_LEFT_SLOWLY)
+    {
         _current_movement = STATE_ROTATE_LEFT_SLOWLY;
+        Brain::ChangeWheelServos();
+    }
+        
     }
     else if (_can_angle< MIDDLE_ANGLE)
     {
-        _current_movement = STATE_ROTATE_RIGHT_SLOWLY;
+        if (_current_movement != STATE_ROTATE_RIGHT_SLOWLY)
+        {
+            _current_movement = STATE_ROTATE_RIGHT_SLOWLY;
+            Brain::ChangeWheelServos();
+        }
     }
     else
     {
@@ -433,20 +405,33 @@ void Brain::GoToCan()
         return;
     }
     movement_time++;
-    _current_movement=STATE_FORWARD;
+       if (_current_movement != STATE_FORWARD)
+    {
+        _current_movement = STATE_FORWARD;
+        Brain::ChangeWheelServos();
+    }
     bool whiskers_reading = !digitalRead(_pin_whiskers);
     if (whiskers_reading)
     {
         movement_time =0;
         _current_behaviour = CATCH_CAN;
-        _current_movement=STATE_STOP;
+           if (_current_movement != STATE_STOP)
+            {
+                _current_movement = STATE_STOP;
+                Brain::ChangeWheelServos();
+            }
     }
 }
 
 void Brain::CatchCan()
 {
-    _current_movement=STATE_STOP;
+       if (_current_movement != STATE_STOP)
+        {
+            _current_movement = STATE_STOP;
+            Brain::ChangeWheelServos();
+        }
     _servo_signal_claw = MAX_ANGLE;
+    Brain::ChangeClawServo();
     if (movement_time > 3)
     {
         _current_behaviour = LOCALIZE_BEACON;
@@ -478,23 +463,53 @@ void Brain::Roam()
                 if(leftDetected && rightDetected) {
                     int r = rand() % 1;
                     if (r >0){
-                        _current_movement = STATE_ROTATE_LEFT;
+                           if (_current_movement != STATE_ROTATE_LEFT)
+                            {
+                                _current_movement = STATE_ROTATE_LEFT;
+                                Brain::ChangeWheelServos();
+                            }
                         _movement_action = ACTION_LOCKED;
                     }else{
-                        _current_movement = STATE_ROTATE_RIGHT;
+                        if (_current_movement != STATE_ROTATE_RIGHT)
+                        {
+                            _current_movement = STATE_ROTATE_RIGHT;
+                            Brain::ChangeWheelServos();
+                        }
                         _movement_action = ACTION_LOCKED;
                     }
                 }else if(leftDetected){
-                    _current_movement = STATE_ROTATE_RIGHT;
+                    if (_current_movement != STATE_ROTATE_RIGHT)
+                            {
+                                _current_movement = STATE_ROTATE_RIGHT;
+                                Brain::ChangeWheelServos();
+                            }
                 }else if(rightDetected){
-                    _current_movement = STATE_ROTATE_LEFT;
+                    if (_current_movement != STATE_ROTATE_LEFT)
+                            {
+                                _current_movement = STATE_ROTATE_LEFT;
+                                Brain::ChangeWheelServos();
+                            }
                 }else{
-                    _current_movement = STATE_FORWARD;
+                    if (_current_movement != STATE_FORWARD)
+                            {
+                                _current_movement = STATE_FORWARD;
+                                Brain::ChangeWheelServos();
+                            }
                     int r = rand() % 4;
                     if (r==2) {
-                    _current_movement = STATE_FORWARD_LEFT;
+                    
+                    if (_current_movement != STATE_FORWARD_LEFT)
+                            {
+                                _current_movement = STATE_FORWARD_LEFT;
+                                Brain::ChangeWheelServos();
+                            }
                     } else if (r==3) {
-                    _current_movement = STATE_FORWARD_RIGHT;
+                    
+                    if (_current_movement != STATE_FORWARD_RIGHT)
+                        {
+                            _current_movement = STATE_FORWARD_RIGHT;
+                            Brain::ChangeWheelServos();
+                        }
                     }
                 }
                 break;
@@ -507,9 +522,14 @@ void Brain::Roam()
             _can_reading = 255;
             _can_angle = MAX_ANGLE;
             _servo_signal_tower = MIN_ANGLE;
+            Brain::ChangeTowerServo();
         }
         movement_time = 0;
-        _current_movement = STATE_STOP;
+        if (_current_movement != STATE_STOP)
+        {
+            _current_movement = STATE_STOP;
+            Brain::ChangeWheelServos();
+        }
     }
 }
 
@@ -624,14 +644,91 @@ void Brain::AvoidCollision(byte distance)
     bool rightDetected = (ir_right_front_distance_reading <= distance) && (ir_right_front_distance_reading > 0);
     int ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
     if (ultrasonic_upper_reading < MIN_PINGSENSOR_READING)
-    {
-        _current_movement = STATE_BACKWARD_LEFT;
+    {   
+        if (_current_movement != STATE_BACKWARD_LEFT)
+        {
+            _current_movement = STATE_BACKWARD_LEFT;
+            Brain::ChangeWheelServos();
+        }
         return;
     }
     if(leftDetected){
-        _current_movement = STATE_ROTATE_RIGHT;
+        if (_current_movement != STATE_ROTATE_RIGHT)
+        {
+            _current_movement = STATE_ROTATE_RIGHT;
+            Brain::ChangeWheelServos();
+        }
     }else if(rightDetected){
-        _current_movement = STATE_ROTATE_LEFT;
+        if (_current_movement != STATE_ROTATE_LEFT)
+        {
+            _current_movement = STATE_ROTATE_LEFT;
+            Brain::ChangeWheelServos();
+        }
     }
-
 }
+
+
+void Brain::ChangeWheelServos()
+{
+    switch(_current_movement)
+    {
+    case STATE_ROTATE_LEFT_SLOWLY:
+        _servo_signal_wheel_left = 1490;
+        _servo_signal_wheel_right = 1490;
+        break;
+    case STATE_ROTATE_RIGHT_SLOWLY:
+        _servo_signal_wheel_left = 1510;
+        _servo_signal_wheel_right = 1510;
+        break;
+    case STATE_ROTATE_LEFT:
+        _servo_signal_wheel_left = 1450;
+        _servo_signal_wheel_right = 1450;
+        break;
+    case STATE_ROTATE_RIGHT:
+        _servo_signal_wheel_left = 1550;
+        _servo_signal_wheel_right = 1550;
+        break;
+    case STATE_FORWARD:
+        _servo_signal_wheel_left = 1550;
+        _servo_signal_wheel_right = 1450;
+        break;
+    case STATE_BACKWARD:
+        _servo_signal_wheel_left = 1450;
+        _servo_signal_wheel_right = 1550;
+        break;
+    case STATE_STOP:
+        _servo_signal_wheel_left = 1500;
+        _servo_signal_wheel_right = 1500;
+        break;
+    case STATE_BACKWARD_LEFT:
+        _servo_signal_wheel_left = 1450;
+        _servo_signal_wheel_right = 1600;
+        break;
+    case STATE_BACKWARD_RIGHT:
+        _servo_signal_wheel_left = 1400;
+        _servo_signal_wheel_right = 1550;
+        break;
+    }
+    
+    _servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
+    _servo_signal_wheel_right = Brain::Clamp(_servo_signal_wheel_right,MAX_SIGNAL,MIN_SIGNAL);
+
+    _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
+    _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
+}
+
+void Brain::ChangeClawServo()
+{
+    _servo_signal_claw = Brain::Clamp(_servo_signal_claw,MAX_ANGLE,MIN_ANGLE);
+    
+    _servo_claw.write(_servo_signal_claw);
+}
+
+void Brain::ChangeTowerServo()
+{
+    
+    _servo_signal_tower = Brain::Clamp(_servo_signal_tower,MAX_ANGLE,MIN_ANGLE);
+
+    _servo_tower.write(_servo_signal_tower);
+}
+

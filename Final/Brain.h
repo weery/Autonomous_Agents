@@ -166,6 +166,7 @@ class Brain
         const unsigned short MAX_SIGNAL = 1600;
         const unsigned short MIDDLE_SIGNAL = 1500;
         const unsigned short MIN_SIGNAL = 1400;
+        
         // Find can constants
         const byte ULTRASONIC_DIFF_MARGIN = 6;
         
@@ -173,8 +174,10 @@ class Brain
         
         bool AvoidingCollision= false;
         byte CollisionTimer = 0;
+        
+        void ChangeWheelServos();
+        void ChangeClawServo();
+        void ChangeTowerServo();
 };
-
-
 
 #endif
