@@ -122,18 +122,14 @@ void Brain::Run()
     // =digitalRead(_pin_whiskers);
     //Serial.print("Current Behaviour: ");
     //Serial.println(_current_behaviour);
-    if (AvoidingCollision)
+
+    if (CollisionTimer)
     {
-        if (CollisionTimer>0)
-        {
-            // DO AVOIDING
-        }
-        else{
-            AvoidingCollision = false;
-        }
+        Brain::AvoidCollision(COLLISION_CONSTANT);
         CollisionTimer--;
     }
-    else{
+    else
+    {
         switch(_current_behaviour)
         {
             case LOCALIZE_BEACON:
@@ -176,7 +172,7 @@ void Brain::Run()
         }
     }
 
-    Brain::AvoidCollision(COLLISION_CONSTANT);
+
     // ADD COLLISION AVOIDANCE
     switch(_current_movement)
     {
@@ -197,12 +193,12 @@ void Brain::Run()
         _servo_signal_wheel_right = 1550;
         break;
     case STATE_FORWARD:
-        _servo_signal_wheel_left = 1550;
-        _servo_signal_wheel_right = 1450;
+        _servo_signal_wheel_left = MAX_SIGNAL;
+        _servo_signal_wheel_right = MIN_SIGNAL;
         break;
     case STATE_BACKWARD:
-        _servo_signal_wheel_left = 1450;
-        _servo_signal_wheel_right = 1550;
+        _servo_signal_wheel_left = MIN_SIGNAL;
+        _servo_signal_wheel_right = MAX_SIGNAL;
         break;
     case STATE_STOP:
         _servo_signal_wheel_left = 1500;
@@ -215,6 +211,14 @@ void Brain::Run()
     case STATE_BACKWARD_RIGHT:
         _servo_signal_wheel_left = 1400;
         _servo_signal_wheel_right = 1550;
+        break;
+    case STATE_FORWARD_RIGHT:
+        _servo_signal_wheel_left = MAX_SIGNAL;
+        _servo_signal_wheel_right = MIN_SIGNAL + 50;
+        break;
+    case STATE_FORWARD_LEFT:
+        _servo_signal_wheel_left = MAX_SIGNAL - 50;
+        _servo_signal_wheel_right = MIN_SIGNAL;
         break;
     }
 
