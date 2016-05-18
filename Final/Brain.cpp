@@ -718,15 +718,15 @@ void Brain::AvoidCollision(byte distance)
         return;
     }
     if(leftDetected){
-        if (_current_movement != STATE_ROTATE_RIGHT)
+        if (_current_movement != STATE_FORWARD_RIGHT)
         {
-            _current_movement = STATE_ROTATE_RIGHT;
+            _current_movement = STATE_FORWARD_RIGHT;
             Brain::ChangeWheelServos();
         }
     }else if(rightDetected){
-        if (_current_movement != STATE_ROTATE_LEFT)
+        if (_current_movement != STATE_FORWARD_LEFT)
         {
-            _current_movement = STATE_ROTATE_LEFT;
+            _current_movement = STATE_FORWARD_LEFT;
             Brain::ChangeWheelServos();
         }
     }
@@ -754,12 +754,12 @@ void Brain::ChangeWheelServos()
         _servo_signal_wheel_right = 1550;
         break;
     case STATE_FORWARD:
-        _servo_signal_wheel_left = 1550;
-        _servo_signal_wheel_right = 1450;
+        _servo_signal_wheel_left = MAX_SIGNAL;
+        _servo_signal_wheel_right = MIN_SIGNAL;
         break;
     case STATE_BACKWARD:
-        _servo_signal_wheel_left = 1450;
-        _servo_signal_wheel_right = 1550;
+        _servo_signal_wheel_left = MIN_SIGNAL;
+        _servo_signal_wheel_right = MAX_SIGNAL;
         break;
     case STATE_STOP:
         _servo_signal_wheel_left = 1500;
@@ -773,6 +773,14 @@ void Brain::ChangeWheelServos()
         _servo_signal_wheel_left = 1400;
         _servo_signal_wheel_right = 1550;
         break;
+    case STATE_FORWARD_RIGHT:
+        _servo_signal_wheel_left = MAX_SIGNAL;
+        _servo_signal_wheel_right = MIN_SIGNAL + 50;
+        break;
+    case STATE_FORWARD_LEFT:
+        _servo_signal_wheel_left = MAX_SIGNAL - 50;
+        _servo_signal_wheel_right = MIN_SIGNAL;
+        break;
     }
 
     _servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
@@ -785,13 +793,11 @@ void Brain::ChangeWheelServos()
 void Brain::ChangeClawServo()
 {
     _servo_signal_claw = Brain::Clamp(_servo_signal_claw,MAX_ANGLE,MIN_ANGLE);
-
     _servo_claw.write(_servo_signal_claw);
 }
 
 void Brain::ChangeTowerServo()
 {
-
     _servo_signal_tower = Brain::Clamp(_servo_signal_tower,MAX_ANGLE,MIN_ANGLE);
 
     _servo_tower.write(_servo_signal_tower);
