@@ -171,81 +171,7 @@ void Brain::Run()
                 break;
         }
     }
-
-
-    // ADD COLLISION AVOIDANCE
-    switch(_current_movement)
-    {
-    case STATE_ROTATE_LEFT_SLOWLY:
-        _servo_signal_wheel_left = 1490;
-        _servo_signal_wheel_right = 1490;
-        break;
-    case STATE_ROTATE_RIGHT_SLOWLY:
-        _servo_signal_wheel_left = 1510;
-        _servo_signal_wheel_right = 1510;
-        break;
-    case STATE_ROTATE_LEFT:
-        _servo_signal_wheel_left = 1450;
-        _servo_signal_wheel_right = 1450;
-        break;
-    case STATE_ROTATE_RIGHT:
-        _servo_signal_wheel_left = 1550;
-        _servo_signal_wheel_right = 1550;
-        break;
-    case STATE_FORWARD:
-        _servo_signal_wheel_left = MAX_SIGNAL;
-        _servo_signal_wheel_right = MIN_SIGNAL;
-        break;
-    case STATE_BACKWARD:
-        _servo_signal_wheel_left = MIN_SIGNAL;
-        _servo_signal_wheel_right = MAX_SIGNAL;
-        break;
-    case STATE_STOP:
-        _servo_signal_wheel_left = 1500;
-        _servo_signal_wheel_right = 1500;
-        break;
-    case STATE_BACKWARD_LEFT:
-        _servo_signal_wheel_left = 1450;
-        _servo_signal_wheel_right = 1600;
-        break;
-    case STATE_BACKWARD_RIGHT:
-        _servo_signal_wheel_left = 1400;
-        _servo_signal_wheel_right = 1550;
-        break;
-    case STATE_FORWARD_RIGHT:
-        _servo_signal_wheel_left = MAX_SIGNAL;
-        _servo_signal_wheel_right = MIN_SIGNAL + 50;
-        break;
-    case STATE_FORWARD_LEFT:
-        _servo_signal_wheel_left = MAX_SIGNAL - 50;
-        _servo_signal_wheel_right = MIN_SIGNAL;
-        break;
-    }
-
-    //Serial.print("Current Behaviour: ");
-    //Serial.println(_current_behaviour);
-
-    //Serial.print("Current Movement: ");
-    //Serial.println(_current_movement);
-
-    _servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
-    _servo_signal_wheel_right = Brain::Clamp(_servo_signal_wheel_right,MAX_SIGNAL,MIN_SIGNAL);
-
-    _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
-    _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
-
-    //Serial.print("Before clamp");
-    //Serial.println(_servo_signal_claw);
-    _servo_signal_claw = Brain::Clamp(_servo_signal_claw,MAX_ANGLE,MIN_ANGLE);
-    //Serial.print("After Clamp");
-    //Serial.println(_servo_signal_claw);
-
-    _servo_claw.write(_servo_signal_claw);
-
-    _servo_signal_tower = Brain::Clamp(_servo_signal_tower,MAX_ANGLE,MIN_ANGLE);
-
-    _servo_tower.write(_servo_signal_tower);
-
+    
     byte remaining_delay=UPDATE_DELAY-_update_counter;
     delay(remaining_delay);
 }
@@ -425,6 +351,7 @@ void Brain::HeadToCan()
         _can_reading=255;
         _can_angle=MIDDLE_ANGLE;
         _servo_signal_tower = MIN_ANGLE;
+        Brain:ChangeTowerServo();
         return;
     }
     Serial.println(abs(ultrasonic_lower_reading - _can_reading));
@@ -676,7 +603,7 @@ byte Brain::ReadIrDistance(byte pin_reciever, byte pin_transmitter)
 {
     unsigned short frequencies[4] = {38000,40500,45000,52000};
     //byte distances[4] = {26,21,15,10};
-    byte distances[4] = {26,21,15,10};
+    byte distances[4] = {COLLISION_DISTANCE_LONG,COLLISION_DISTANCE_SEMILONG,COLLISION_DISTANCE_MIDDLE,COLLISION_DISTANCE_SHORT};
     byte distance = 0;
     for(short i = 3; i >= 0; i--)
     {

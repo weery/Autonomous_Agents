@@ -151,6 +151,11 @@ class Brain
         const byte UPDATE_DELAY = 100;
         const byte BLACK_PAPER_LIMIT = 10;
         const byte COLLISION_CONSTANT = 15;
+        
+        const byte COLLISION_DISTANCE_SHORT = ;
+        const byte COLLISION_DISTANCE_MIDDLE = ;
+        const byte COLLISION_DISTANCE_SEMILONG = ; 
+        const byte COLLISION_DISTANCE_LONG = ; 
 
         byte _can_reading = 255;
         byte _can_angle;
