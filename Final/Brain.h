@@ -150,12 +150,11 @@ class Brain
 
         const byte UPDATE_DELAY = 100;
         const byte BLACK_PAPER_LIMIT = 10;
-        const byte COLLISION_CONSTANT = 15;
-        
-        const byte COLLISION_DISTANCE_SHORT = ;
-        const byte COLLISION_DISTANCE_MIDDLE = ;
-        const byte COLLISION_DISTANCE_SEMILONG = ; 
-        const byte COLLISION_DISTANCE_LONG = ; 
+
+        const byte COLLISION_DISTANCE_SHORT = 10;
+        const byte COLLISION_DISTANCE_MIDDLE = 15;
+        const byte COLLISION_DISTANCE_SEMILONG = 21;
+        const byte COLLISION_DISTANCE_LONG = 26;
 
         byte _can_reading = 255;
         byte _can_angle;
@@ -171,15 +170,15 @@ class Brain
         const unsigned short MAX_SIGNAL = 1600;
         const unsigned short MIDDLE_SIGNAL = 1500;
         const unsigned short MIN_SIGNAL = 1400;
-        
+
         // Find can constants
         const byte ULTRASONIC_DIFF_MARGIN = 6;
-        
+
         const byte MIN_PINGSENSOR_READING = 10;
-        
+
         bool AvoidingCollision= false;
-        byte CollisionTimer = 0;
-        
+        short CollisionTimer = 0;
+
         void ChangeWheelServos();
         void ChangeClawServo();
         void ChangeTowerServo();

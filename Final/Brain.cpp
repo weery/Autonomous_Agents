@@ -140,6 +140,12 @@ void Brain::Run()
                 break;
             case GO_TO_BEACON:
                 Brain::GoToBeacon();
+                if (Brain::AvoidCollision(COLLISION_DISTANCE_SEMILONG))
+                {
+                    CollisionTimer = 10;
+                    _current_behaviour = LOCALIZE_BEACON;
+                    movement_time = 0;
+                }
                 break;
             case LEAVE_CAN:
                 Brain::LeaveCan();
@@ -152,11 +158,22 @@ void Brain::Run()
                 break;
             case GO_TO_CAN:
                 Brain::GoToCan();
+                if (Brain::AvoidCollision(COLLISION_DISTANCE_SEMILONG))
+                {
+                    CollisionTimer = 10;
+                    _current_behaviour = LOCALIZE_CAN;
+                    movement_time = 0;
+                }
                 break;
             case CATCH_CAN:
                 Brain::CatchCan();
                 break;
             case ROAM:
+                if (Brain::AvoidCollision(COLLISION_DISTANCE_SEMILONG))
+                {
+                    CollisionTimer = 10;
+                    break;
+                }
                 Brain::Roam();
                 break;
             case TEST_SENSOR:
@@ -171,7 +188,7 @@ void Brain::Run()
                 break;
         }
     }
-    
+
     byte remaining_delay=UPDATE_DELAY-_update_counter;
     delay(remaining_delay);
 }
@@ -435,81 +452,46 @@ void Brain::CatchCan()
 
 void Brain::Roam()
 {
-    // SÅ vi inte går ifrån roam
     movement_time=0;
-    if (movement_time < 20) {
-        switch(_movement_action) {
-            case ACTION_LOCKED:
-                movement_time++;
-                if (movement_time == 5)
-                {
-                    _movement_action = ACTION_UNDECIDED;
-                    movement_time = 0;
-                }
-                break;
-            case ACTION_UNDECIDED:
-                byte ir_left_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter_left_front);
-                byte ir_right_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter_right_front);
-                bool leftDetected = ir_left_front_distance_reading > 0;
-                bool rightDetected = ir_right_front_distance_reading > 0;
-                if(leftDetected && rightDetected) {
-                    int r = rand() % 1;
-                    if (r >0){
-                           if (_current_movement != STATE_ROTATE_LEFT)
-                            {
-                                _current_movement = STATE_ROTATE_LEFT;
-                                Brain::ChangeWheelServos();
-                            }
-                        _movement_action = ACTION_LOCKED;
-                    }else{
-                        if (_current_movement != STATE_ROTATE_RIGHT)
-                        {
-                            _current_movement = STATE_ROTATE_RIGHT;
-                            Brain::ChangeWheelServos();
-                        }
-                        _movement_action = ACTION_LOCKED;
-                    }
-                }else if(leftDetected){
-                    if (_current_movement != STATE_ROTATE_RIGHT)
-                            {
-                                _current_movement = STATE_ROTATE_RIGHT;
-                                Brain::ChangeWheelServos();
-                            }
-                }else if(rightDetected){
-                    if (_current_movement != STATE_ROTATE_LEFT)
-                            {
-                                _current_movement = STATE_ROTATE_LEFT;
-                                Brain::ChangeWheelServos();
-                            }
-                }else{
-                    if (_current_movement != STATE_FORWARD)
-                            {
-                                _current_movement = STATE_FORWARD;
-                                Brain::ChangeWheelServos();
-                            }
-                    int r = rand() % 4;
-                    if (r==2) {
+    if (movement_time < 20)
+    {
+        int r = rand() % 4;
 
-                    if (_current_movement != STATE_FORWARD_LEFT)
-                            {
-                                _current_movement = STATE_FORWARD_LEFT;
-                                Brain::ChangeWheelServos();
-                            }
-                    } else if (r==3) {
-
-                    if (_current_movement != STATE_FORWARD_RIGHT)
-                        {
-                            _current_movement = STATE_FORWARD_RIGHT;
-                            Brain::ChangeWheelServos();
-                        }
-                    }
-                }
-                break;
+        if (r==2)
+        {
+            if (_current_movement != STATE_FORWARD_LEFT)
+            {
+                _current_movement = STATE_FORWARD_LEFT;
+                Brain::ChangeWheelServos();
+            }
         }
-    } else {
-        if (has_can) {
+        else if (r==3)
+        {
+            if (_current_movement != STATE_FORWARD_RIGHT)
+            {
+                _current_movement = STATE_FORWARD_RIGHT;
+                Brain::ChangeWheelServos();
+            }
+        }
+        else
+        {
+            if (_current_movement != STATE_FORWARD)
+            {
+                _current_movement = STATE_FORWARD;
+                Brain::ChangeWheelServos();
+            }
+        }
+        movement_time++;
+        break;
+    }
+    else
+    {
+        if (has_can)
+        {
             _current_behaviour = LOCALIZE_BEACON;
-        } else {
+        }
+        else
+        {
             _current_behaviour = LOCALIZE_CAN;
             _can_reading = 255;
             _can_angle = MAX_ANGLE;
@@ -628,7 +610,7 @@ byte Brain::ReadPhototransistor(byte pin_phototransistor)
     return analogRead(pin_phototransistor);
 }
 
-void Brain::AvoidCollision(byte distance)
+bool Brain::AvoidCollision(byte distance)
 {
     byte ir_left_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter_left_front);
     byte ir_right_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter_right_front);
@@ -642,7 +624,7 @@ void Brain::AvoidCollision(byte distance)
             _current_movement = STATE_BACKWARD_LEFT;
             Brain::ChangeWheelServos();
         }
-        return;
+        return true;
     }
     if(leftDetected){
         if (_current_movement != STATE_FORWARD_RIGHT)
@@ -650,13 +632,16 @@ void Brain::AvoidCollision(byte distance)
             _current_movement = STATE_FORWARD_RIGHT;
             Brain::ChangeWheelServos();
         }
+        return true;
     }else if(rightDetected){
         if (_current_movement != STATE_FORWARD_LEFT)
         {
             _current_movement = STATE_FORWARD_LEFT;
             Brain::ChangeWheelServos();
         }
+        return true;
     }
+    return false;
 }
 
 
