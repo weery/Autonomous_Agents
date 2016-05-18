@@ -122,7 +122,7 @@ void Brain::Run()
     // =digitalRead(_pin_whiskers);
     //Serial.print("Current Behaviour: ");
     //Serial.println(_current_behaviour);
-    
+
     switch(_current_behaviour)
     {
         case LOCALIZE_BEACON:
@@ -164,7 +164,7 @@ void Brain::Run()
             break;
     }
 
-
+    Brain::AvoidCollision(COLLISION_CONSTANT);
     // ADD COLLISION AVOIDANCE
     switch(_current_movement)
     {
@@ -245,19 +245,19 @@ void Brain::LocalizeBeacon()
     /*
     Serial.print("Left Front: ");
     Serial.println(ir_left_front_reading);
-    
+
     Serial.print("Right Front: ");
     Serial.println(ir_right_front_reading);
 
     Serial.print("Left Back: ");
     Serial.println(ir_left_back_reading);
-    
+
     Serial.print("Right Back: ");
     Serial.println(ir_right_back_reading);
     */
-    
+
     _current_movement = STATE_STOP;
-    
+
     if (movement_time > 100)
     {
         movement_time = 0;
@@ -459,8 +459,8 @@ void Brain::Roam()
             case ACTION_UNDECIDED:
                 byte ir_left_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter_left_front);
                 byte ir_right_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter_right_front);
-                bool leftDetected = ir_left_front_distance_reading>0;
-                bool rightDetected = ir_right_front_distance_reading>0;
+                bool leftDetected = ir_left_front_distance_reading > 0;
+                bool rightDetected = ir_right_front_distance_reading > 0;
                 if(leftDetected && rightDetected) {
                     int r = rand() % 1;
                     if (r >0){
@@ -600,4 +600,17 @@ bool Brain::ReadIr(byte pin_reciever)
 byte Brain::ReadPhototransistor(byte pin_phototransistor)
 {
     return analogRead(pin_phototransistor);
+}
+
+void Bran::AvoidCollision(byte distance)
+{
+    byte ir_left_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_left_front,_pin_ir_transmitter_left_front);
+    byte ir_right_front_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_front,_pin_ir_transmitter_right_front);
+    bool leftDetected = (ir_left_front_distance_reading <= distance) && (ir_left_front_distance_reading > 0);
+    bool rightDetected = (ir_right_front_distance_reading <= distance) && (ir_right_front_distance_reading > 0);
+    if(leftDetected){
+        _current_movement = STATE_ROTATE_RIGHT;
+    }else if(rightDetected){
+        _current_movement = STATE_ROTATE_LEFT;
+    }
 }

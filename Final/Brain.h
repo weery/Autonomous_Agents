@@ -124,6 +124,9 @@ class Brain
         void CatchCan();
         void Roam();
 
+        // Obstacle avoidance
+        void AvoidCollision(byte distance);
+
         // Read sensors
         int ReadUltrasonic2Pin(byte pin_echo, byte pin_trig);
 
@@ -147,6 +150,7 @@ class Brain
 
         const byte UPDATE_DELAY = 100;
         const byte BLACK_PAPER_LIMIT = 10;
+        const byte COLLISION_CONSTANT = 15;
 
         byte _can_reading = 255;
         byte _can_angle;
