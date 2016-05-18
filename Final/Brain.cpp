@@ -122,11 +122,18 @@ void Brain::Run()
     // =digitalRead(_pin_whiskers);
     //Serial.print("Current Behaviour: ");
     //Serial.println(_current_behaviour);
-
-    if (CollisionTimer)
+    Serial.println(CollisionTimer);
+    if (CollisionTimer>0)
     {
-        Brain::AvoidCollision(COLLISION_CONSTANT);
         CollisionTimer--;
+    }
+    else if(CollisionTimer==0)
+    {
+        CollisionTimer--;
+        if (Brain::AvoidCollision(COLLISION_DISTANCE_MIDDLE))
+        {
+            CollisionTimer = 10;
+        }
     }
     else
     {
@@ -299,8 +306,11 @@ void Brain::GoToBeacon()
 
 void Brain::LeaveCan()
 {
-    _servo_signal_claw = MAX_ANGLE;
-    Brain::ChangeClawServo();
+    if(_servo_signal_claw!=MIN_ANGLE)
+    {
+        _servo_signal_claw = MIN_ANGLE;
+        Brain::ChangeClawServo();
+    }
     if (movement_time > 10)
     {
         _current_behaviour = ROAM;
@@ -434,13 +444,16 @@ void Brain::GoToCan()
 
 void Brain::CatchCan()
 {
-       if (_current_movement != STATE_STOP)
-        {
-            _current_movement = STATE_STOP;
-            Brain::ChangeWheelServos();
-        }
-    _servo_signal_claw = MAX_ANGLE;
-    Brain::ChangeClawServo();
+    if (_current_movement != STATE_STOP)
+    {
+        _current_movement = STATE_STOP;
+        Brain::ChangeWheelServos();
+    }
+    if(_servo_signal_claw!=MAX_ANGLE)
+    {
+        _servo_signal_claw = MAX_ANGLE;
+        Brain::ChangeClawServo();
+    }
     if (movement_time > 3)
     {
         _current_behaviour = LOCALIZE_BEACON;
@@ -456,7 +469,8 @@ void Brain::Roam()
     if (movement_time < 20)
     {
         int r = rand() % 4;
-
+        Serial.print("Roam value:");
+        Serial.println(r);
         if (r==2)
         {
             if (_current_movement != STATE_FORWARD_LEFT)
@@ -482,7 +496,6 @@ void Brain::Roam()
             }
         }
         movement_time++;
-        break;
     }
     else
     {
@@ -619,6 +632,8 @@ bool Brain::AvoidCollision(byte distance)
     int ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
     if (ultrasonic_upper_reading < MIN_PINGSENSOR_READING)
     {
+        Serial.print("Upper reading");
+        Serial.println(ultrasonic_upper_reading);
         if (_current_movement != STATE_BACKWARD_LEFT)
         {
             _current_movement = STATE_BACKWARD_LEFT;
@@ -626,7 +641,28 @@ bool Brain::AvoidCollision(byte distance)
         }
         return true;
     }
-    if(leftDetected){
+    if (leftDetected && rightDetected)
+    {
+        int r = rand () % 2;
+        if (r==0)
+        {
+            if (_current_movement != STATE_ROTATE_LEFT)
+            {
+                _current_movement = STATE_ROTATE_LEFT;
+                Brain::ChangeWheelServos();
+            }
+        }
+        else
+        {
+            if (_current_movement != STATE_ROTATE_RIGHT)
+            {
+                _current_movement = STATE_ROTATE_RIGHT;
+                Brain::ChangeWheelServos();
+            }
+        }
+        return true;
+    }
+    else if(leftDetected){
         if (_current_movement != STATE_FORWARD_RIGHT)
         {
             _current_movement = STATE_FORWARD_RIGHT;
@@ -697,9 +733,13 @@ void Brain::ChangeWheelServos()
 
     _servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
     _servo_signal_wheel_right = Brain::Clamp(_servo_signal_wheel_right,MAX_SIGNAL,MIN_SIGNAL);
-
+    Serial.print("left wheel: ");
+    Serial.println(_servo_signal_wheel_left);
+    Serial.print("right wheel: ");
+    Serial.println(_servo_signal_wheel_right);
     _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
     _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
+
 }
 
 void Brain::ChangeClawServo()

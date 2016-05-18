@@ -125,7 +125,7 @@ class Brain
         void Roam();
 
         // Obstacle avoidance
-        void AvoidCollision(byte distance);
+        bool AvoidCollision(byte distance);
 
         // Read sensors
         int ReadUltrasonic2Pin(byte pin_echo, byte pin_trig);
@@ -174,10 +174,9 @@ class Brain
         // Find can constants
         const byte ULTRASONIC_DIFF_MARGIN = 6;
 
-        const byte MIN_PINGSENSOR_READING = 10;
+        const byte MIN_PINGSENSOR_READING = 15;
 
-        bool AvoidingCollision= false;
-        short CollisionTimer = 0;
+        short CollisionTimer = -1;
 
         void ChangeWheelServos();
         void ChangeClawServo();
@@ -185,3 +184,4 @@ class Brain
 };
 
 #endif
+
