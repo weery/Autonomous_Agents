@@ -85,7 +85,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = ROAM;
+    _current_behaviour = LOCALIZE_CAN;
 
     delay(100);
 }
@@ -134,6 +134,10 @@ void Brain::Run()
         {
             CollisionTimer = 10;
         }
+        else
+        {
+            Brain::ChangeTowerServo();
+        }
     }
     else
     {
@@ -169,7 +173,7 @@ void Brain::Run()
                 {
                     CollisionTimer = 10;
                     _current_behaviour = LOCALIZE_CAN;
-                    movement_time = 0;
+                    Brain::GoToLocalizeCan();
                 }
                 break;
             case CATCH_CAN:
@@ -368,6 +372,15 @@ void Brain::LocalizeCan()
     movement_time++;
 }
 
+void Brain::GoToLocalizeCan()
+{
+  movement_time=0;
+  _can_reading=255;
+  _can_angle=MIDDLE_ANGLE;
+  _servo_signal_tower=MIN_ANGLE;
+
+}
+
 void Brain::HeadToCan()
 {
     int ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
@@ -375,10 +388,7 @@ void Brain::HeadToCan()
     {
         movement_time=0;
         _current_behaviour = LOCALIZE_CAN;
-        _can_reading=255;
-        _can_angle=MIDDLE_ANGLE;
-        _servo_signal_tower = MIN_ANGLE;
-        Brain:ChangeTowerServo();
+        Brain::GoToLocalizeCan();
         return;
     }
     Serial.println(abs(ultrasonic_lower_reading - _can_reading));
@@ -415,12 +425,11 @@ void Brain::HeadToCan()
 
 void Brain::GoToCan()
 {
+    movement_time=0;
     if (movement_time > 20) {
         movement_time = 0;
-        _can_reading = 255;
-        _can_angle = MIN_ANGLE;
-        _servo_signal_tower = MIN_ANGLE;
-        _current_behaviour = LOCALIZE_CAN;
+        Brain::GoToLocalizeCan();
+        
         return;
     }
     movement_time++;
@@ -430,15 +439,18 @@ void Brain::GoToCan()
         Brain::ChangeWheelServos();
     }
     bool whiskers_reading = !digitalRead(_pin_whiskers);
+    Serial.println("Can I sense it?");
+
     if (whiskers_reading)
     {
+        Serial.println("I can sense it;)");
         movement_time =0;
         _current_behaviour = CATCH_CAN;
-           if (_current_movement != STATE_STOP)
-            {
-                _current_movement = STATE_STOP;
-                Brain::ChangeWheelServos();
-            }
+         if (_current_movement != STATE_STOP)
+          {
+              _current_movement = STATE_STOP;
+              Brain::ChangeWheelServos();
+          }
     }
 }
 
@@ -465,7 +477,6 @@ void Brain::CatchCan()
 
 void Brain::Roam()
 {
-    movement_time=0;
     if (movement_time < 20)
     {
         int r = rand() % 4;
@@ -506,9 +517,7 @@ void Brain::Roam()
         else
         {
             _current_behaviour = LOCALIZE_CAN;
-            _can_reading = 255;
-            _can_angle = MAX_ANGLE;
-            _servo_signal_tower = MIN_ANGLE;
+            Brain::GoToLocalizeCan();
             Brain::ChangeTowerServo();
         }
         movement_time = 0;

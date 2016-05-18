@@ -146,6 +146,8 @@ class Brain
         void LogSensors(bool whisker_left, bool whisker_right, int ultrasonic_distance,
         byte ir_left, byte ir_right);
 
+        void GoToLocalizeCan();
+
         byte _update_counter;
 
         const byte UPDATE_DELAY = 100;
