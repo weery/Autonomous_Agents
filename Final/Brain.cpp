@@ -85,7 +85,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = ROAM;
+    _current_behaviour = LOCALIZE_CAN;
 
     delay(100);
 }
@@ -127,19 +127,6 @@ void Brain::Run()
     {
         CollisionTimer--;
     }
-    /*else if(CollisionTimer==0)
-    {
-        CollisionTimer--;
-        if (Brain::AvoidCollision(COLLISION_DISTANCE_MIDDLE))
-        {
-            CollisionTimer = 5;
-        }
-        else
-        {
-            Brain::ChangeTowerServo();
-        }
-    }
-    */
     else
     {
         switch(_current_behaviour)
@@ -341,6 +328,12 @@ void Brain::LeaveCan()
 
 void Brain::LocalizeCan()
 {
+    if (movement_time == 0)
+    {
+        _servo_signal_tower = MIN_ANGLE;
+        Brain::ChangeTowerServo();
+        delay(20);
+    }
     if (_current_movement != STATE_STOP)
     {
         _current_movement = STATE_STOP;
@@ -355,7 +348,8 @@ void Brain::LocalizeCan()
         {
             _current_behaviour = HEAD_TO_CAN;
         }
-        else {
+        else 
+        {
             _current_behaviour = ROAM;
         }
     }
@@ -381,7 +375,6 @@ void Brain::GoToLocalizeCan()
   _can_reading=255;
   _can_angle=MIDDLE_ANGLE;
   _servo_signal_tower=MIN_ANGLE;
-
 }
 
 void Brain::HeadToCan()
@@ -392,6 +385,7 @@ void Brain::HeadToCan()
         movement_time=0;
         _current_behaviour = LOCALIZE_CAN;
         Brain::GoToLocalizeCan();
+    _current_behaviour = LOCALIZE_CAN;
         return;
     }
     Serial.println(abs(ultrasonic_lower_reading - _can_reading));
@@ -404,11 +398,10 @@ void Brain::HeadToCan()
     else if (_can_angle>MIDDLE_ANGLE )
     {
         if (_current_movement != STATE_ROTATE_LEFT_SLOWLY)
-    {
-        _current_movement = STATE_ROTATE_LEFT_SLOWLY;
-        Brain::ChangeWheelServos();
-    }
-
+        {
+            _current_movement = STATE_ROTATE_LEFT_SLOWLY;
+            Brain::ChangeWheelServos();
+        }
     }
     else if (_can_angle< MIDDLE_ANGLE)
     {
@@ -428,15 +421,15 @@ void Brain::HeadToCan()
 
 void Brain::GoToCan()
 {
-    movement_time=0;
     if (movement_time > 20) {
         movement_time = 0;
         Brain::GoToLocalizeCan();
-
+        Serial.println("I got here:D");
         return;
     }
     movement_time++;
-       if (_current_movement != STATE_FORWARD)
+    
+    if (_current_movement != STATE_FORWARD)
     {
         _current_movement = STATE_FORWARD;
         Brain::ChangeWheelServos();
