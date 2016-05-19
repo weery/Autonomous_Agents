@@ -178,7 +178,11 @@ class Brain
 
         const byte MIN_PINGSENSOR_READING = 15;
 
+        // Avoid Constant
         short CollisionTimer = 0;
+
+        // Localize constant
+        const byte MAX_LOCALIZING_TIME = 50;
 
         void ChangeWheelServos();
         void ChangeClawServo();

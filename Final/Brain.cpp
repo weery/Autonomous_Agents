@@ -221,7 +221,7 @@ void Brain::LocalizeBeacon()
         Brain::ChangeWheelServos();
     }
 
-    if (movement_time > 100)
+    if (movement_time > MAX_LOCALIZING_TIME)
     {
         movement_time = 0;
         _current_behaviour = ROAM;
