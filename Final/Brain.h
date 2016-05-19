@@ -178,7 +178,7 @@ class Brain
 
         const byte MIN_PINGSENSOR_READING = 15;
 
-        short CollisionTimer = -1;
+        short CollisionTimer = 0;
 
         void ChangeWheelServos();
         void ChangeClawServo();

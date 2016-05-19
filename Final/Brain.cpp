@@ -127,18 +127,19 @@ void Brain::Run()
     {
         CollisionTimer--;
     }
-    else if(CollisionTimer==0)
+    /*else if(CollisionTimer==0)
     {
         CollisionTimer--;
         if (Brain::AvoidCollision(COLLISION_DISTANCE_MIDDLE))
         {
-            CollisionTimer = 10;
+            CollisionTimer = 5;
         }
         else
         {
             Brain::ChangeTowerServo();
         }
     }
+    */
     else
     {
         switch(_current_behaviour)
@@ -150,13 +151,14 @@ void Brain::Run()
                 Brain::HeadToBeacon();
                 break;
             case GO_TO_BEACON:
-                Brain::GoToBeacon();
-                if (Brain::AvoidCollision(COLLISION_DISTANCE_SEMILONG))
+                if (Brain::AvoidCollision(COLLISION_DISTANCE_MIDDLE))
                 {
                     CollisionTimer = 10;
                     _current_behaviour = LOCALIZE_BEACON;
                     movement_time = 0;
+                    break;
                 }
+                Brain::GoToBeacon();
                 break;
             case LEAVE_CAN:
                 Brain::LeaveCan();
@@ -168,13 +170,14 @@ void Brain::Run()
                 Brain::HeadToCan();
                 break;
             case GO_TO_CAN:
-                Brain::GoToCan();
-                if (Brain::AvoidCollision(COLLISION_DISTANCE_SEMILONG))
+                if (Brain::AvoidCollision(COLLISION_DISTANCE_MIDDLE))
                 {
                     CollisionTimer = 10;
                     _current_behaviour = LOCALIZE_CAN;
                     Brain::GoToLocalizeCan();
+                    break;
                 }
+                Brain::GoToCan();
                 break;
             case CATCH_CAN:
                 Brain::CatchCan();
@@ -429,7 +432,7 @@ void Brain::GoToCan()
     if (movement_time > 20) {
         movement_time = 0;
         Brain::GoToLocalizeCan();
-        
+
         return;
     }
     movement_time++;
@@ -732,10 +735,10 @@ void Brain::ChangeWheelServos()
         break;
     case STATE_FORWARD_RIGHT:
         _servo_signal_wheel_left = MAX_SIGNAL;
-        _servo_signal_wheel_right = MIN_SIGNAL + 50;
+        _servo_signal_wheel_right = MIN_SIGNAL + 75;
         break;
     case STATE_FORWARD_LEFT:
-        _servo_signal_wheel_left = MAX_SIGNAL - 50;
+        _servo_signal_wheel_left = MAX_SIGNAL - 75;
         _servo_signal_wheel_right = MIN_SIGNAL;
         break;
     }
