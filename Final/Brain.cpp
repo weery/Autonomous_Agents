@@ -453,8 +453,6 @@ void Brain::HeadToCan()
 
 void Brain::GoToCan()
 {
-    Serial.print("I am here ");
-    Serial.println(movement_time);
     if (movement_time > MAX_MOVEMENT_TOWARDS_CAN) {
         movement_time = 0;
         Brain::GoToLocalizeCan();
