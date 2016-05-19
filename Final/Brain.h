@@ -126,6 +126,7 @@ class Brain
         void Roam();
         void LeaveSafeZone();
         bool CheckHasCan();
+        bool IsAtBeacon();
 
         // Obstacle avoidance
         bool AvoidCollision(byte distance);

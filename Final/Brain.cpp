@@ -312,14 +312,8 @@ void Brain::HeadToBeacon()
 
 void Brain::GoToBeacon()
 {
-    byte phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
+    Brain::IsAtBeacon();
 
-    if (phototransistor_reading < BLACK_PAPER_LIMIT)
-    {
-        movement_time = 0;
-        _current_behaviour = LEAVE_CAN;
-        return;
-    }
     if (movement_time > 10)
     {
         _current_behaviour = LOCALIZE_BEACON;
@@ -339,6 +333,18 @@ void Brain::GoToBeacon()
             }
         movement_time++;
     }
+}
+bool Brain::IsAtBeacon()
+{
+    byte phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
+
+    if (phototransistor_reading < BLACK_PAPER_LIMIT)
+    {
+        movement_time = 0;
+        _current_behaviour = LEAVE_CAN;
+        return true;
+    }
+    return false;
 }
 
 void Brain::LeaveCan()
@@ -518,7 +524,8 @@ void Brain::Roam()
 {
     if (movement_time < 20)
     {
-        if (!has_can && Brain::CheckHasCan())
+        if ((!has_can && Brain::CheckHasCan()) ||
+            (has_can && Brain::IsAtBeacon()))
         {
             return;
         }
