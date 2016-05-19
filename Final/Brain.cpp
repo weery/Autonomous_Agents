@@ -68,7 +68,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _servo_signal_tower = 90;
 
-    _servo_signal_claw = MIN_ANGLE;
+    _servo_signal_claw = MAX_ANGLE;
 
     _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
     _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
@@ -85,7 +85,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = ROAM;
+    _current_behaviour = TEST_SENSOR;
 
     delay(100);
 }
@@ -187,7 +187,8 @@ void Brain::Run()
                 Brain::Roam();
                 break;
             case TEST_SENSOR:
-
+                byte phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
+                Serial.println(phototransistor_reading);
                 break;
         }
     }
@@ -327,7 +328,7 @@ void Brain::GoToBeacon()
 bool Brain::IsAtBeacon()
 {
     byte phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
-
+    Serial.println(phototransistor_reading);
     if (phototransistor_reading < BLACK_PAPER_LIMIT)
     {
         movement_time = 0;
