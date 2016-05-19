@@ -119,10 +119,6 @@ void Brain::Run()
     byte ir_right_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_back,_pin_ir_transmitter_right_back);
 
     bool whiskers_reading;
-    // =digitalRead(_pin_whiskers);
-    //Serial.print("Current Behaviour: ");
-    //Serial.println(_current_behaviour);
-    Serial.println(CollisionTimer);
     if (CollisionTimer>0)
     {
         CollisionTimer--;
@@ -191,14 +187,7 @@ void Brain::Run()
                 Brain::Roam();
                 break;
             case TEST_SENSOR:
-                whiskers_reading = !digitalRead(_pin_whiskers);
-                //if (!whiskers_reading) {
-                    //_servo_signal_claw = 135;
-                //} else {
-                    //_servo_signal_claw = 90;
-                //}
-                Serial.print("Whiskers reading: ");
-                Serial.println(whiskers_reading);
+
                 break;
         }
     }
@@ -209,7 +198,7 @@ void Brain::Run()
 
 void Brain::LeaveSafeZone()
 {
-    if (movement_time < 10)
+    if (movement_time < 5)
     {
         if (_current_movement != STATE_BACKWARD)
         {
@@ -217,7 +206,7 @@ void Brain::LeaveSafeZone()
             Brain::ChangeWheelServos();
         }
     }
-    else if (movement_time < 15)
+    else if (movement_time < 10)
     {
         if (_current_movement != STATE_ROTATE_LEFT && _current_movement != STATE_ROTATE_RIGHT)
         {
@@ -233,6 +222,7 @@ void Brain::LeaveSafeZone()
     {
         movement_time=0;
         _current_behaviour = ROAM;
+        return;
     }
     movement_time++;
 }
@@ -404,9 +394,6 @@ void Brain::LocalizeCan()
     {
         _can_angle = _servo_signal_tower;
         _can_reading = ultrasonic_lower_reading;
-        Serial.print("Initial reading: ");
-        Serial.println(_can_reading);
-        Serial.println(_can_angle);
     }
     _servo_signal_tower+=5;
     Brain::ChangeTowerServo();
@@ -432,7 +419,6 @@ void Brain::HeadToCan()
     _current_behaviour = LOCALIZE_CAN;
         return;
     }
-    Serial.println(abs(ultrasonic_lower_reading - _can_reading));
 
     if (abs(ultrasonic_lower_reading - _can_reading)<3)
     {
@@ -465,10 +451,12 @@ void Brain::HeadToCan()
 
 void Brain::GoToCan()
 {
+    Serial.print("I am here ");
+    Serial.println(movement_time);
     if (movement_time > MAX_MOVEMENT_TOWARDS_CAN) {
         movement_time = 0;
         Brain::GoToLocalizeCan();
-        Serial.println("I got here:D");
+        _current_behaviour = LOCALIZE_CAN;
         return;
     }
     movement_time++;
@@ -530,8 +518,6 @@ void Brain::Roam()
             return;
         }
         int r = rand() % 32;
-        Serial.print("Roam value:");
-        Serial.println(r);
         if (r==2)
         {
             if (_current_movement != STATE_ROTATE_LEFT)
@@ -792,10 +778,6 @@ void Brain::ChangeWheelServos()
 
     _servo_signal_wheel_left = Brain::Clamp(_servo_signal_wheel_left,MAX_SIGNAL,MIN_SIGNAL);
     _servo_signal_wheel_right = Brain::Clamp(_servo_signal_wheel_right,MAX_SIGNAL,MIN_SIGNAL);
-    Serial.print("left wheel: ");
-    Serial.println(_servo_signal_wheel_left);
-    Serial.print("right wheel: ");
-    Serial.println(_servo_signal_wheel_right);
     _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
     _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
 
