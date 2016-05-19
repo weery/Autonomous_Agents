@@ -142,7 +142,7 @@ class Brain
 
         bool ReadIrWithTransmitter(byte pin_reciever, byte pin_transmitter, unsigned short frequency);
 
-        byte ReadPhototransistor(byte pin_phototransistor);
+        float ReadPhototransistor(byte pin_phototransistor);
 
         unsigned short Clamp(unsigned short val, unsigned short max, unsigned short min);
 

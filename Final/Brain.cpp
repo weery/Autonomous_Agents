@@ -100,7 +100,7 @@ void Brain::Run()
     int ultrasonic_upper_reading;
     //= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
-    byte phototransistor_reading;
+    float phototransistor_reading;
     // = Brain::ReadPhototransistor(_pin_phototransistor);
 
     bool ir_left_front_reading;
@@ -187,7 +187,7 @@ void Brain::Run()
                 Brain::Roam();
                 break;
             case TEST_SENSOR:
-                byte phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
+                float phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
                 Serial.println(phototransistor_reading);
                 break;
         }
@@ -327,8 +327,7 @@ void Brain::GoToBeacon()
 }
 bool Brain::IsAtBeacon()
 {
-    byte phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
-    Serial.println(phototransistor_reading);
+    float phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
     if (phototransistor_reading < BLACK_PAPER_LIMIT)
     {
         movement_time = 0;
@@ -664,7 +663,7 @@ bool Brain::ReadIr(byte pin_reciever)
 }
 
 
-byte Brain::ReadPhototransistor(byte pin_phototransistor)
+float Brain::ReadPhototransistor(byte pin_phototransistor)
 {
     return analogRead(pin_phototransistor);
 }
