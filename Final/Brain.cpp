@@ -85,7 +85,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = LOCALIZE_CAN;
+    _current_behaviour = ROAM;
 
     delay(100);
 }
@@ -198,7 +198,7 @@ void Brain::Run()
 }
 
 void Brain::LeaveSafeZone()
-{    
+{
     if (movement_time<10)
     {
         if (_current_movement != STATE_BACKWARD)
@@ -219,7 +219,7 @@ void Brain::LeaveSafeZone()
             Brain::ChangeWheelServos();
         }
     }
-    else 
+    else
     {
         movement_time=0;
         _current_behaviour = ROAM;
@@ -376,7 +376,7 @@ void Brain::LocalizeCan()
         {
             _current_behaviour = HEAD_TO_CAN;
         }
-        else 
+        else
         {
             _current_behaviour = ROAM;
         }
@@ -456,18 +456,22 @@ void Brain::GoToCan()
         return;
     }
     movement_time++;
-    
+
     if (_current_movement != STATE_FORWARD)
     {
         _current_movement = STATE_FORWARD;
         Brain::ChangeWheelServos();
     }
+
+    Brain::CheckHasCan();
+}
+
+bool Brain::CheckHasCan()
+{
     bool whiskers_reading = !digitalRead(_pin_whiskers);
-    Serial.println("Can I sense it?");
 
     if (whiskers_reading)
     {
-        Serial.println("I can sense it;)");
         movement_time =0;
         _current_behaviour = CATCH_CAN;
          if (_current_movement != STATE_STOP)
@@ -476,6 +480,7 @@ void Brain::GoToCan()
               Brain::ChangeWheelServos();
           }
     }
+    return whiskers_reading;
 }
 
 void Brain::CatchCan()
@@ -503,6 +508,10 @@ void Brain::Roam()
 {
     if (movement_time < 20)
     {
+        if (!has_can && Brain::CheckHasCan())
+        {
+            return;
+        }
         int r = rand() % 32;
         Serial.print("Roam value:");
         Serial.println(r);
