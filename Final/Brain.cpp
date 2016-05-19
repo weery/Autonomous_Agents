@@ -472,12 +472,16 @@ void Brain::GoToCan()
         _current_movement = STATE_FORWARD;
         Brain::ChangeWheelServos();
     }
+
+    Brain::CheckHasCan();
+}
+
+bool Brain::CheckHasCan()
+{
     bool whiskers_reading = !digitalRead(_pin_whiskers);
-    Serial.println("Can I sense it?");
 
     if (whiskers_reading)
     {
-        Serial.println("I can sense it;)");
         movement_time =0;
         _current_behaviour = CATCH_CAN;
          if (_current_movement != STATE_STOP)
@@ -486,6 +490,7 @@ void Brain::GoToCan()
               Brain::ChangeWheelServos();
           }
     }
+    return whiskers_reading;
 }
 
 void Brain::CatchCan()
@@ -514,6 +519,10 @@ void Brain::Roam()
     movement_time = 0;
     if (movement_time < 20)
     {
+        if (!has_can && Brain::CheckHasCan())
+        {
+            return;
+        }
         int r = rand() % 32;
         Serial.print("Roam value:");
         Serial.println(r);
