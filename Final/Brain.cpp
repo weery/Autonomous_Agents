@@ -85,7 +85,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = LOCALIZE_CAN;
+    _current_behaviour = ROAM;
 
     delay(100);
 }
@@ -429,7 +429,7 @@ void Brain::GoToCan()
     if (movement_time > 20) {
         movement_time = 0;
         Brain::GoToLocalizeCan();
-        
+
         return;
     }
     movement_time++;
@@ -479,22 +479,22 @@ void Brain::Roam()
 {
     if (movement_time < 20)
     {
-        int r = rand() % 4;
+        int r = rand() % 32;
         Serial.print("Roam value:");
         Serial.println(r);
         if (r==2)
         {
-            if (_current_movement != STATE_FORWARD_LEFT)
+            if (_current_movement != STATE_ROTATE_LEFT)
             {
-                _current_movement = STATE_FORWARD_LEFT;
+                _current_movement = STATE_ROTATE_LEFT;
                 Brain::ChangeWheelServos();
             }
         }
         else if (r==3)
         {
-            if (_current_movement != STATE_FORWARD_RIGHT)
+            if (_current_movement != STATE_ROTATE_RIGHT)
             {
-                _current_movement = STATE_FORWARD_RIGHT;
+                _current_movement = STATE_ROTATE_RIGHT;
                 Brain::ChangeWheelServos();
             }
         }
