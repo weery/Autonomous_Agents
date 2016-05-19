@@ -126,7 +126,7 @@ void Brain::Run()
     if (CollisionTimer>0)
     {
         CollisionTimer--;
-        if(CollisionTimer == 10 && _current_movement == STATE_BACKWARD)
+        if(CollisionTimer == 5 && _current_movement == STATE_BACKWARD)
         {
             if (rand() % 2 == 0)
             _current_movement = STATE_ROTATE_LEFT;
@@ -150,7 +150,7 @@ void Brain::Run()
             case GO_TO_BEACON:
                 if (Brain::AvoidCollision(COLLISION_DISTANCE_SHORT))
                 {
-                    CollisionTimer = 5;
+                    CollisionTimer = CollisionTimer + 5;
                     _current_behaviour = LOCALIZE_BEACON;
                     movement_time = 0;
                     break;
@@ -169,7 +169,7 @@ void Brain::Run()
             case GO_TO_CAN:
                 if (Brain::AvoidCollision(COLLISION_DISTANCE_SHORT))
                 {
-                    CollisionTimer = 5;
+                    CollisionTimer = CollisionTimer + 5;
                     _current_behaviour = LOCALIZE_CAN;
                     Brain::GoToLocalizeCan();
                     break;
@@ -185,7 +185,7 @@ void Brain::Run()
             case ROAM:
                 if (Brain::AvoidCollision(COLLISION_DISTANCE_SHORT))
                 {
-                    CollisionTimer = 5;
+                    CollisionTimer = CollisionTimer + 5;
                     break;
                 }
                 Brain::Roam();
@@ -516,7 +516,6 @@ void Brain::CatchCan()
 
 void Brain::Roam()
 {
-    movement_time = 0;
     if (movement_time < 20)
     {
         if (!has_can && Brain::CheckHasCan())
@@ -683,6 +682,7 @@ bool Brain::AvoidCollision(byte distance)
     bool leftDetected = (ir_left_front_distance_reading <= distance) && (ir_left_front_distance_reading > 0);
     bool rightDetected = (ir_right_front_distance_reading <= distance) && (ir_right_front_distance_reading > 0);
     int ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
+    CollisionTimer = 0;
     if (ultrasonic_upper_reading < MIN_PINGSENSOR_READING)
     {
             if (_current_movement != STATE_BACKWARD)
@@ -690,7 +690,7 @@ bool Brain::AvoidCollision(byte distance)
                 _current_movement = STATE_BACKWARD;
                 Brain::ChangeWheelServos();
             }
-        CollisionTimer = 15;
+        CollisionTimer = 5;
         return true;
     }
     if (leftDetected && rightDetected)
