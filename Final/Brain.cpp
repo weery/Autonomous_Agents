@@ -390,7 +390,9 @@ void Brain::LocalizeCan()
     int ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
     int ultrasonic_upper_reading= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
-    if (ultrasonic_lower_reading< _can_reading && abs(ultrasonic_lower_reading-ultrasonic_upper_reading)> ULTRASONIC_DIFF_MARGIN)
+    if (ultrasonic_lower_reading< _can_reading &&
+        abs(ultrasonic_lower_reading-ultrasonic_upper_reading)> ULTRASONIC_DIFF_MARGIN &&
+        ultrasonic_lower_reading < 100)
     {
         _can_angle = _servo_signal_tower;
         _can_reading = ultrasonic_lower_reading;
