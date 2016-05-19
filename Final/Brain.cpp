@@ -166,6 +166,9 @@ void Brain::Run()
                 }
                 Brain::GoToCan();
                 break;
+            case LEAVE_SAFE_ZONE:
+                Brain::LeaveSafeZone();
+                break;
             case CATCH_CAN:
                 Brain::CatchCan();
                 break;
@@ -192,6 +195,36 @@ void Brain::Run()
 
     byte remaining_delay=UPDATE_DELAY-_update_counter;
     delay(remaining_delay);
+}
+
+void Brain::LeaveSafeZone()
+{    
+    if (movement_time<10)
+    {
+        if (_current_movement != STATE_BACKWARD)
+        {
+            _current_movement = STATE_BACKWARD;
+            Brain::ChangeWheelServos();
+        }
+    }
+    else if (movement_time < 15)
+    {
+        if (_current_movement != STATE_ROTATE_LEFT && _current_movement != STATE_ROTATE_RIGHT)
+        {
+            int r = rand() % 2;
+            if (r ==0)
+                _current_movement = STATE_ROTATE_LEFT;
+            else
+                _current_movement = STATE_ROTATE_RIGHT;
+            Brain::ChangeWheelServos();
+        }
+    }
+    else 
+    {
+        movement_time=0;
+        _current_behaviour = ROAM;
+    }
+    movement_time++;
 }
 
 void Brain::LocalizeBeacon()
@@ -307,13 +340,8 @@ void Brain::LeaveCan()
     }
     if (movement_time > 10)
     {
-        _current_behaviour = ROAM;
+        _current_behaviour = LEAVE_SAFE_ZONE;
         movement_time=0;
-           if (_current_movement != STATE_BACKWARD)
-            {
-                _current_movement = STATE_BACKWARD;
-                Brain::ChangeWheelServos();
-            }
     }
     else
     {

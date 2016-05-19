@@ -103,6 +103,7 @@ class Brain
             GO_TO_CAN = 7, // Go Towards found can
             CATCH_CAN = 8, // When at can, lower arm
             TEST_SENSOR = 9,
+            LEAVE_SAFE_ZONE = 10; 
         };
 
         BrainStates _current_state;
@@ -123,6 +124,7 @@ class Brain
         void GoToCan();
         void CatchCan();
         void Roam();
+        void LeaveSafeZone();
 
         // Obstacle avoidance
         bool AvoidCollision(byte distance);
