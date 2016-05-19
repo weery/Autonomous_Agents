@@ -85,7 +85,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = LOCALIZE_CAN;
+    _current_behaviour = ROAM;
 
     delay(100);
 }
@@ -126,6 +126,16 @@ void Brain::Run()
     if (CollisionTimer>0)
     {
         CollisionTimer--;
+        if(CollisionTimer == 10 && _current_movement == STATE_BACKWARD)
+        {
+            if (rand() % 2 == 0)
+            _current_movement = STATE_ROTATE_LEFT;
+            else
+                _current_movement = STATE_ROTATE_RIGHT;
+
+            Brain::ChangeWheelServos();
+
+        }
     }
     else
     {
@@ -138,9 +148,9 @@ void Brain::Run()
                 Brain::HeadToBeacon();
                 break;
             case GO_TO_BEACON:
-                if (Brain::AvoidCollision(COLLISION_DISTANCE_MIDDLE))
+                if (Brain::AvoidCollision(COLLISION_DISTANCE_SHORT))
                 {
-                    CollisionTimer = 10;
+                    CollisionTimer = 5;
                     _current_behaviour = LOCALIZE_BEACON;
                     movement_time = 0;
                     break;
@@ -157,9 +167,9 @@ void Brain::Run()
                 Brain::HeadToCan();
                 break;
             case GO_TO_CAN:
-                if (Brain::AvoidCollision(COLLISION_DISTANCE_MIDDLE))
+                if (Brain::AvoidCollision(COLLISION_DISTANCE_SHORT))
                 {
-                    CollisionTimer = 10;
+                    CollisionTimer = 5;
                     _current_behaviour = LOCALIZE_CAN;
                     Brain::GoToLocalizeCan();
                     break;
@@ -173,9 +183,9 @@ void Brain::Run()
                 Brain::CatchCan();
                 break;
             case ROAM:
-                if (Brain::AvoidCollision(COLLISION_DISTANCE_SEMILONG))
+                if (Brain::AvoidCollision(COLLISION_DISTANCE_SHORT))
                 {
-                    CollisionTimer = 10;
+                    CollisionTimer = 5;
                     break;
                 }
                 Brain::Roam();
@@ -198,8 +208,8 @@ void Brain::Run()
 }
 
 void Brain::LeaveSafeZone()
-{    
-    if (movement_time<10)
+{
+    if (movement_time < 10)
     {
         if (_current_movement != STATE_BACKWARD)
         {
@@ -219,7 +229,7 @@ void Brain::LeaveSafeZone()
             Brain::ChangeWheelServos();
         }
     }
-    else 
+    else
     {
         movement_time=0;
         _current_behaviour = ROAM;
@@ -241,7 +251,7 @@ void Brain::LocalizeBeacon()
         Brain::ChangeWheelServos();
     }
 
-    if (movement_time > MAX_LOCALIZING_TIME)
+    if (movement_time > MAX_LOCALIZING_BEACON)
     {
         movement_time = 0;
         _current_behaviour = ROAM;
@@ -376,7 +386,7 @@ void Brain::LocalizeCan()
         {
             _current_behaviour = HEAD_TO_CAN;
         }
-        else 
+        else
         {
             _current_behaviour = ROAM;
         }
@@ -449,14 +459,14 @@ void Brain::HeadToCan()
 
 void Brain::GoToCan()
 {
-    if (movement_time > 20) {
+    if (movement_time > MAX_MOVEMENT_TOWARDS_CAN) {
         movement_time = 0;
         Brain::GoToLocalizeCan();
         Serial.println("I got here:D");
         return;
     }
     movement_time++;
-    
+
     if (_current_movement != STATE_FORWARD)
     {
         _current_movement = STATE_FORWARD;
@@ -501,6 +511,7 @@ void Brain::CatchCan()
 
 void Brain::Roam()
 {
+    movement_time = 0;
     if (movement_time < 20)
     {
         int r = rand() % 32;
@@ -665,13 +676,12 @@ bool Brain::AvoidCollision(byte distance)
     int ultrasonic_upper_reading = Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
     if (ultrasonic_upper_reading < MIN_PINGSENSOR_READING)
     {
-        Serial.print("Upper reading");
-        Serial.println(ultrasonic_upper_reading);
-        if (_current_movement != STATE_BACKWARD_LEFT)
-        {
-            _current_movement = STATE_BACKWARD_LEFT;
-            Brain::ChangeWheelServos();
-        }
+            if (_current_movement != STATE_BACKWARD)
+            {
+                _current_movement = STATE_BACKWARD;
+                Brain::ChangeWheelServos();
+            }
+        CollisionTimer = 15;
         return true;
     }
     if (leftDetected && rightDetected)

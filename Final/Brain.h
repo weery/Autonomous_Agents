@@ -103,7 +103,7 @@ class Brain
             GO_TO_CAN = 7, // Go Towards found can
             CATCH_CAN = 8, // When at can, lower arm
             TEST_SENSOR = 9,
-            LEAVE_SAFE_ZONE = 10; 
+            LEAVE_SAFE_ZONE = 10,
         };
 
         BrainStates _current_state;
@@ -183,8 +183,9 @@ class Brain
         // Avoid Constant
         short CollisionTimer = 0;
 
-        // Localize constant
-        const byte MAX_LOCALIZING_TIME = 50;
+        // Max move constants
+        const byte MAX_LOCALIZING_BEACON = 50;
+        const byte MAX_MOVEMENT_TOWARDS_CAN = 10;
 
         void ChangeWheelServos();
         void ChangeClawServo();
