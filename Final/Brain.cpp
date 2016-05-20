@@ -192,6 +192,11 @@ void Brain::Run()
                 Brain::Roam();
                 break;
             case TEST_SENSOR:
+                int ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
+                delay(10);
+                int ultrasonic_upper_reading= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
+                
+                Serial.println(ultrasonic_lower_reading-ultrasonic_upper_reading);
                 break;
         }
     }
@@ -354,6 +359,7 @@ void Brain::LeaveCan()
     {
         _current_behaviour = LEAVE_SAFE_ZONE;
         movement_time=0;
+        has_can = false;
     }
     else
     {
@@ -396,10 +402,11 @@ void Brain::LocalizeCan()
     int ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
     delay(10);
     int ultrasonic_upper_reading= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
-
+    
+    Serial.println(ultrasonic_lower_reading-ultrasonic_upper_reading);
     if (ultrasonic_lower_reading< _can_reading &&
         abs(ultrasonic_lower_reading-ultrasonic_upper_reading)> ULTRASONIC_DIFF_MARGIN &&
-        ultrasonic_lower_reading < 100)
+        ultrasonic_lower_reading < 50)
     {
         _can_angle = _servo_signal_tower;
         _can_reading = ultrasonic_lower_reading;
@@ -522,7 +529,7 @@ void Brain::Roam()
         if ((!has_can && Brain::CheckHasCan()) ||
             (has_can && Brain::IsAtBeacon()))
         {
-            return;
+           return;
         }
         int r = rand() % 32;
         if (r==2)
@@ -611,6 +618,7 @@ int Brain::ReadUltrasonic2Pin(byte pin_echo, byte pin_trig)
     digitalWrite(pin_trig, HIGH);
     delayMicroseconds(10);
 
+    
     digitalWrite(pin_trig, LOW);
     float duration = pulseIn(pin_echo, HIGH);
     float distance = duration/58.2;
@@ -738,12 +746,12 @@ void Brain::ChangeWheelServos()
     switch(_current_movement)
     {
     case STATE_ROTATE_LEFT_SLOWLY:
-        _servo_signal_wheel_left = 1490;
-        _servo_signal_wheel_right = 1490;
+        _servo_signal_wheel_left = MIDDLE_SIGNAL-20;
+        _servo_signal_wheel_right = MIDDLE_SIGNAL-20;
         break;
     case STATE_ROTATE_RIGHT_SLOWLY:
-        _servo_signal_wheel_left = 1510;
-        _servo_signal_wheel_right = 1510;
+        _servo_signal_wheel_left = MIDDLE_SIGNAL+20;
+        _servo_signal_wheel_right = MIDDLE_SIGNAL+20;
         break;
     case STATE_ROTATE_LEFT:
         _servo_signal_wheel_left = 1450;
