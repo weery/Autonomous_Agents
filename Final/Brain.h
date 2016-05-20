@@ -183,7 +183,7 @@ class Brain
         // Find can constants
         const byte ULTRASONIC_DIFF_MARGIN = 6;
 
-        const byte MIN_PINGSENSOR_READING = 15;
+        const byte MIN_PINGSENSOR_READING = 10;
 
         // Avoid Constant
         short CollisionTimer = 0;

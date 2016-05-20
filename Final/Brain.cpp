@@ -72,7 +72,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _servo_signal_tower = 90;
 
-    _servo_signal_claw = MAX_ANGLE;
+    _servo_signal_claw = MIN_ANGLE;
 
     _servo_wheel_left.writeMicroseconds(_servo_signal_wheel_left);
     _servo_wheel_right.writeMicroseconds(_servo_signal_wheel_right);
@@ -89,7 +89,7 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _movement_action = ACTION_UNDECIDED;
 
-    _current_behaviour = TEST_SENSOR;
+    _current_behaviour = LOCALIZE_CAN;
 
     delay(100);
 }
@@ -123,6 +123,7 @@ void Brain::Run()
     byte ir_right_back_distance_reading= Brain::ReadIrDistance(_pin_ir_reciever_right_back,_pin_ir_transmitter_right_back);
 
     bool whiskers_reading;
+    
     if (CollisionTimer>0)
     {
         CollisionTimer--;
@@ -191,7 +192,6 @@ void Brain::Run()
                 Brain::Roam();
                 break;
             case TEST_SENSOR:
-                Brain::IsAtBeacon();
                 break;
         }
     }
@@ -394,6 +394,7 @@ void Brain::LocalizeCan()
         }
     }
     int ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
+    delay(10);
     int ultrasonic_upper_reading= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
     if (ultrasonic_lower_reading< _can_reading &&
