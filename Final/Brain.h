@@ -16,7 +16,8 @@ class Brain
                             byte pin_ir_reciever_right_front,byte pin_ir_reciever_left_back,
                             byte pin_ir_reciever_right_back, byte pin_ir_transmitter_left_front,
                             byte pin_ir_transmitter_right_front, byte pin_ir_transmitter_left_back,
-                            byte pin_ir_transmitter_richt_back, byte pin_phototransistor, byte pin_whiskers);
+                            byte pin_ir_transmitter_richt_back, byte pin_phototransistor, byte pin_whiskers,
+                            byte pin_led);
         void Run();
 
     private:
@@ -48,6 +49,8 @@ class Brain
         byte _pin_phototransistor;
 
         byte _pin_whiskers;
+        
+        byte _pin_led;
 
     // Servos
         Servo _servo_wheel_left;

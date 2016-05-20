@@ -5,7 +5,7 @@ Brain brain;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  brain.InitializePins(13,12,11,9,7,8,10,6,3,5,4,19,16,18,17,14,15);
+  brain.InitializePins(13,12,11,9,7,8,10,6,3,5,4,19,16,18,17,14,15,2);
   // Digital Pins (0,1,2,3,4,5,6,7,8,9,10,11,12,13)
   // Taken   Pins (-,-,x,x,x,x,x,x,x,x,xx,xx,xx,xx)
   // Analog Pins  (0,1,2,3,4,5)
@@ -27,6 +27,7 @@ void setup() {
   // ir transmitter right back =  17 (analog)
   // phototransistor = 14
   // Whiskers = 15
+  // LED = 2
 }
 
 void loop() {

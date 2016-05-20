@@ -7,7 +7,8 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
         byte pin_ir_reciever_right_front ,byte pin_ir_reciever_left_back,
         byte pin_ir_reciever_right_back,byte pin_ir_transmitter_left_front,
         byte pin_ir_transmitter_right_front, byte pin_ir_transmitter_left_back,
-        byte pin_ir_transmitter_right_back, byte pin_phototransistor, byte pin_whiskers)
+        byte pin_ir_transmitter_right_back, byte pin_phototransistor, byte pin_whiskers,
+        byte pin_led)
 {
     // Assign all pins
     _pin_servo_wheel_left= pin_servo_wheel_left;
@@ -35,6 +36,9 @@ void Brain::InitializePins(byte pin_servo_wheel_left,byte pin_servo_wheel_right,
 
     _pin_phototransistor= pin_phototransistor;
 
+    _pin_led = pin_led;
+    pinMode(_pin_led,OUTPUT);
+    
     _pin_whiskers = pin_whiskers;
     pinMode(_pin_whiskers,INPUT);
 
@@ -187,8 +191,7 @@ void Brain::Run()
                 Brain::Roam();
                 break;
             case TEST_SENSOR:
-                float phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
-                Serial.println(phototransistor_reading);
+                Brain::IsAtBeacon();
                 break;
         }
     }
@@ -327,7 +330,10 @@ void Brain::GoToBeacon()
 }
 bool Brain::IsAtBeacon()
 {
+    digitalWrite(_pin_led,HIGH);
+    delay(10);
     float phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
+    digitalWrite(_pin_led,LOW);
     if (phototransistor_reading < BLACK_PAPER_LIMIT)
     {
         movement_time = 0;
