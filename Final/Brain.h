@@ -193,7 +193,7 @@ class Brain
         short photo_counter = 0;
 
         // Max move constants
-        const byte MAX_LOCALIZING_BEACON = 200;
+        const byte MAX_LOCALIZING_BEACON = 100;
         const byte MAX_MOVEMENT_TOWARDS_CAN = 7;
         
 

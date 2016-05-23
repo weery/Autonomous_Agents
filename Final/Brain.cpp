@@ -202,6 +202,7 @@ void Brain::Run()
     }
 
     byte remaining_delay=UPDATE_DELAY-_update_counter;
+    // Change to int
     if(remaining_delay > 0)
     delay(remaining_delay);
 }
