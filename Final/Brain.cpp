@@ -143,19 +143,22 @@ void Brain::Run()
         switch(_current_behaviour)
         {
             case LOCALIZE_BEACON:
+                digitalWrite(_pin_led,HIGH);
                 Brain::LocalizeBeacon();
                 break;
             case HEAD_TO_BEACON:
+                digitalWrite(_pin_led,HIGH);
                 Brain::HeadToBeacon();
                 break;
             case GO_TO_BEACON:
-                if (Brain::AvoidCollision(COLLISION_DISTANCE_SHORT))
+                digitalWrite(_pin_led,HIGH);
+                /*if (Brain::AvoidCollision(COLLISION_DISTANCE_SHORT))
                 {
                     CollisionTimer = CollisionTimer + 5;
                     _current_behaviour = LOCALIZE_BEACON;
                     movement_time = 0;
                     break;
-                }
+                }*/
                 Brain::GoToBeacon();
                 break;
             case LEAVE_CAN:
@@ -168,6 +171,7 @@ void Brain::Run()
                 Brain::HeadToCan();
                 break;
             case GO_TO_CAN:
+                Brain::GoToCan();
                 if (Brain::AvoidCollision(COLLISION_DISTANCE_SHORT))
                 {
                     CollisionTimer = CollisionTimer + 5;
@@ -175,7 +179,6 @@ void Brain::Run()
                     Brain::GoToLocalizeCan();
                     break;
                 }
-                Brain::GoToCan();
                 break;
             case LEAVE_SAFE_ZONE:
                 Brain::LeaveSafeZone();
@@ -192,22 +195,20 @@ void Brain::Run()
                 Brain::Roam();
                 break;
             case TEST_SENSOR:
-                int ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
-                delay(10);
-                int ultrasonic_upper_reading= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
-
-                Serial.println(ultrasonic_lower_reading-ultrasonic_upper_reading);
-                break;
+                digitalWrite(_pin_led,HIGH);
+                Brain::IsAtBeacon();
+             break;
         }
     }
 
     byte remaining_delay=UPDATE_DELAY-_update_counter;
+    if(remaining_delay > 0)
     delay(remaining_delay);
 }
 
 void Brain::LeaveSafeZone()
 {
-    if (movement_time < 5)
+    if (movement_time < 20)
     {
         if (_current_movement != STATE_BACKWARD)
         {
@@ -215,7 +216,7 @@ void Brain::LeaveSafeZone()
             Brain::ChangeWheelServos();
         }
     }
-    else if (movement_time < 10)
+    else if (movement_time < 40)
     {
         if (_current_movement != STATE_ROTATE_LEFT && _current_movement != STATE_ROTATE_RIGHT)
         {
@@ -230,6 +231,7 @@ void Brain::LeaveSafeZone()
     else
     {
         movement_time=0;
+        digitalWrite(_pin_led,LOW);
         _current_behaviour = ROAM;
         return;
     }
@@ -244,10 +246,6 @@ void Brain::LocalizeBeacon()
     bool ir_left_back_reading = Brain::ReadIr(_pin_ir_reciever_left_back);
     bool ir_right_back_reading = Brain::ReadIr(_pin_ir_reciever_right_back);
 
-    Serial.print(ir_left_back_reading);
-    Serial.print(ir_left_front_reading);
-    Serial.print(ir_right_back_reading);
-    Serial.println(ir_right_front_reading);
     if (_current_movement != STATE_STOP)
     {
         _current_movement = STATE_STOP;
@@ -300,16 +298,24 @@ void Brain::LocalizeBeacon()
             return;
         }
         _current_behaviour = HEAD_TO_BEACON;
-        movement_time -= movement_time % 7;
+        movement_time -= movement_time % 10;
         movement_time++;
     }
 }
 
 void Brain::HeadToBeacon()
 {
-    if (movement_time % 7 == 0)
+    if (movement_time % 10 == 0)
     {
-        _current_behaviour = LOCALIZE_BEACON;
+        if(_current_movement == STATE_ROTATE_LEFT_SLOWLY || _current_movement == STATE_ROTATE_RIGHT_SLOWLY)
+          {
+              _current_behaviour = GO_TO_BEACON;
+              movement_time=0;
+          }
+          else
+          {
+            _current_behaviour = LOCALIZE_BEACON;
+          }
     }
     movement_time++;
 }
@@ -318,7 +324,7 @@ void Brain::GoToBeacon()
 {
     Brain::IsAtBeacon();
 
-    if (movement_time > 10)
+    if (movement_time > 20)
     {
         _current_behaviour = LOCALIZE_BEACON;
         movement_time = 0;
@@ -340,14 +346,23 @@ void Brain::GoToBeacon()
 }
 bool Brain::IsAtBeacon()
 {
-    digitalWrite(_pin_led,HIGH);
-    delay(10);
+    //digitalWrite(_pin_led,HIGH);
+    //delay(10);
     float phototransistor_reading = Brain::ReadPhototransistor(_pin_phototransistor);
-    digitalWrite(_pin_led,LOW);
+    //digitalWrite(_pin_led,LOW);
     if (phototransistor_reading < BLACK_PAPER_LIMIT)
+    {
+      photo_counter++;
+    }
+    else
+    {
+      photo_counter=0;
+    }
+    if (photo_counter == MAX_PHOTO_COUNTER)
     {
         movement_time = 0;
         _current_behaviour = LEAVE_CAN;
+            digitalWrite(_pin_led,LOW);
         return true;
     }
     return false;
@@ -383,14 +398,15 @@ void Brain::LocalizeCan()
     {
         _servo_signal_tower = MIN_ANGLE;
         Brain::ChangeTowerServo();
-        delay(20);
+        movement_time++;
+        return;
     }
     if (_current_movement != STATE_STOP)
     {
         _current_movement = STATE_STOP;
         Brain::ChangeWheelServos();
     }
-    if (movement_time >= 19)
+    if (movement_time >= 20)
     {
         movement_time =0;
         _servo_signal_tower = MIDDLE_ANGLE;
@@ -406,12 +422,13 @@ void Brain::LocalizeCan()
     }
     int ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
     delay(10);
+    _update_counter +=10;
     int ultrasonic_upper_reading= Brain::ReadUltrasonic1Pin(_pin_ultrasonic_upper);
 
-    Serial.println(ultrasonic_lower_reading-ultrasonic_upper_reading);
+
     if (ultrasonic_lower_reading< _can_reading &&
-        abs(ultrasonic_lower_reading-ultrasonic_upper_reading)> ULTRASONIC_DIFF_MARGIN &&
-        ultrasonic_lower_reading < 50)
+        ultrasonic_upper_reading-ultrasonic_lower_reading> ULTRASONIC_DIFF_MARGIN &&
+        ultrasonic_lower_reading < ULTRASONIC_MAX_DISTANCE)
     {
         _can_angle = _servo_signal_tower;
         _can_reading = ultrasonic_lower_reading;
@@ -441,32 +458,53 @@ void Brain::HeadToCan()
         return;
     }
 
-    if (abs(ultrasonic_lower_reading - _can_reading)<3)
+    if (countdown ==0)
     {
-        movement_time =0;
-        _current_behaviour = GO_TO_CAN;
+    
+      if (abs(ultrasonic_lower_reading - _can_reading)<2)
+      {
+          /*movement_time =0;
+          if (abs(_can_angle-MIDDLE_ANGLE)>=20)
+          {
+          _current_behaviour = LOCALIZE_CAN;
+                  Brain::GoToLocalizeCan();
+          }
+          else*/
+          countdown = 4;
+      }
+      else if (_can_angle>MIDDLE_ANGLE )
+      {
+          if (_current_movement != STATE_ROTATE_LEFT_SLOWLY)
+          {
+              _current_movement = STATE_ROTATE_LEFT_SLOWLY;
+              Brain::ChangeWheelServos();
+          }
+      }
+      else if (_can_angle< MIDDLE_ANGLE)
+      {
+          if (_current_movement != STATE_ROTATE_RIGHT_SLOWLY)
+          {
+              _current_movement = STATE_ROTATE_RIGHT_SLOWLY;
+              Brain::ChangeWheelServos();
+          }
+      }
+      else
+      {
+          movement_time =0;
+          _current_behaviour = GO_TO_CAN;
+      }
     }
-    else if (_can_angle>MIDDLE_ANGLE )
+    else if (countdown > 1)
     {
-        if (_current_movement != STATE_ROTATE_LEFT_SLOWLY)
-        {
-            _current_movement = STATE_ROTATE_LEFT_SLOWLY;
-            Brain::ChangeWheelServos();
-        }
+      countdown--;
     }
-    else if (_can_angle< MIDDLE_ANGLE)
+    else 
     {
-        if (_current_movement != STATE_ROTATE_RIGHT_SLOWLY)
-        {
-            _current_movement = STATE_ROTATE_RIGHT_SLOWLY;
-            Brain::ChangeWheelServos();
-        }
+          _current_behaviour = GO_TO_CAN;
+          movement_time=0;
+          countdown=0;
     }
-    else
-    {
-        movement_time =0;
-        _current_behaviour = GO_TO_CAN;
-    }
+    
     movement_time++;
 }
 
@@ -492,8 +530,9 @@ void Brain::GoToCan()
 bool Brain::CheckHasCan()
 {
     bool whiskers_reading = !digitalRead(_pin_whiskers);
+    int ultrasonic_lower_reading= Brain::ReadUltrasonic2Pin(_pin_ultrasonic_lower_echo,_pin_ultrasonic_lower_trig);
 
-    if (whiskers_reading)
+    if (whiskers_reading || ultrasonic_lower_reading <= 3)
     {
         movement_time =0;
         _current_behaviour = CATCH_CAN;
@@ -751,12 +790,12 @@ void Brain::ChangeWheelServos()
     switch(_current_movement)
     {
     case STATE_ROTATE_LEFT_SLOWLY:
-        _servo_signal_wheel_left = MIDDLE_SIGNAL-15;
-        _servo_signal_wheel_right = MIDDLE_SIGNAL-15;
+        _servo_signal_wheel_left = MIDDLE_SIGNAL-10;
+        _servo_signal_wheel_right = MIDDLE_SIGNAL-10;
         break;
     case STATE_ROTATE_RIGHT_SLOWLY:
-        _servo_signal_wheel_left = MIDDLE_SIGNAL+15;
-        _servo_signal_wheel_right = MIDDLE_SIGNAL+15;
+        _servo_signal_wheel_left = MIDDLE_SIGNAL+10;
+        _servo_signal_wheel_right = MIDDLE_SIGNAL+10;
         break;
     case STATE_ROTATE_LEFT:
         _servo_signal_wheel_left = 1450;

@@ -157,7 +157,9 @@ class Brain
 
         byte _update_counter;
 
-        const byte UPDATE_DELAY = 100;
+        const byte MAX_PHOTO_COUNTER = 5;
+
+        const byte UPDATE_DELAY = 20;
         const byte BLACK_PAPER_LIMIT = 5;
 
         const byte COLLISION_DISTANCE_SHORT = 10;
@@ -169,7 +171,7 @@ class Brain
         byte _can_angle;
 
         byte movement_time = 0;
-
+        byte countdown=0;
         bool has_can = false;
 
         // servo constants
@@ -182,19 +184,23 @@ class Brain
 
         // Find can constants
         const byte ULTRASONIC_DIFF_MARGIN = 6;
-
+        const byte ULTRASONIC_MAX_DISTANCE = 100;
         const byte MIN_PINGSENSOR_READING = 13;
 
         // Avoid Constant
         short CollisionTimer = 0;
 
+        short photo_counter = 0;
+
         // Max move constants
-        const byte MAX_LOCALIZING_BEACON = 50;
-        const byte MAX_MOVEMENT_TOWARDS_CAN = 10;
+        const byte MAX_LOCALIZING_BEACON = 200;
+        const byte MAX_MOVEMENT_TOWARDS_CAN = 7;
+        
 
         void ChangeWheelServos();
         void ChangeClawServo();
         void ChangeTowerServo();
+        
 };
 
 #endif
