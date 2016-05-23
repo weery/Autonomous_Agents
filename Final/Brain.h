@@ -49,7 +49,7 @@ class Brain
         byte _pin_phototransistor;
 
         byte _pin_whiskers;
-        
+
         byte _pin_led;
 
     // Servos
@@ -158,7 +158,7 @@ class Brain
         byte _update_counter;
 
         const byte UPDATE_DELAY = 100;
-        const byte BLACK_PAPER_LIMIT = 10;
+        const byte BLACK_PAPER_LIMIT = 5;
 
         const byte COLLISION_DISTANCE_SHORT = 10;
         const byte COLLISION_DISTANCE_MIDDLE = 15;
